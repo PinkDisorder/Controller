@@ -1,7 +1,53 @@
 bin/
 obj/
 Releases/
+/out/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
 Controller.sln.DotSettings.user
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / IntelliJ
+.idea/
+/*.sln.iml
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+
+# Logs
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# JetBrains caches
+.idea/
+.idea_modules/
+
+# Rider plugin metadata
+*.ipr
+*.iws
+*.iml
+
+# Generated files
+project.lock.json
+project.fragment.lock.json
+
+# Rider build cache
+.gradle/
