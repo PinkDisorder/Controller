@@ -1,4 +1,4 @@
-namespace Controller.Input;
+namespace Controller.Enums;
 
 // These were tested on a PS5 controller, need tester for xbox
 public enum Button {

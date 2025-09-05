@@ -1,10 +1,12 @@
-﻿using Controller.Config;
-// using HarmonyLib;
+﻿// using HarmonyLib;
 // using Vintagestory.API.Config;
 using JetBrains.Annotations;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
+using Controller.Config;
+using Controller.Lib;
+using Controller.Enums;
 
 
 namespace Controller;
@@ -36,7 +38,7 @@ public class Core : ModSystem {
 
 		Capi.Event.RegisterRenderer(_inputMonitor, EnumRenderStage.Opaque);
 
-		_inputMonitor.OnButtonDown += (i, i1) => { Logger.Chat($"Pressed {(Input.Button)i1}"); };
+		_inputMonitor.OnButtonDown += (i, i1) => { Logger.Chat($"Pressed {(Button)i1}"); };
 
 		_inputMonitor.OnTriggerUpdate += (jid, trigger, amount) => { Logger.Chat($"Pressed {trigger} {amount}"); };
 

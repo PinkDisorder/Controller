@@ -1,6 +1,7 @@
 using Vintagestory.API.Client;
+using Controller.Enums;
 
-namespace Controller;
+namespace Controller.Lib;
 
 public class InputHandler(ICoreClientAPI api) {
 	private bool _isJumpHeld;
@@ -34,16 +35,16 @@ public class InputHandler(ICoreClientAPI api) {
 		if (player == null) return;
 		
 
-		switch ((Input.Button)button) {
-			case Input.Button.A:
+		switch ((Button)button) {
+			case Button.A:
 				_isJumpHeld = true;
 				break;
 
-			case Input.Button.B:
+			case Button.B:
 				_isSprintHeld = true;
 				break;
 
-			case Input.Button.R3:
+			case Button.R3:
 				_isSneakHeld = true;
 				break;
 		}
@@ -54,16 +55,16 @@ public class InputHandler(ICoreClientAPI api) {
 		if (player == null) return;
 
 
-		switch ((Input.Button)button) {
-			case Input.Button.A:
+		switch ((Button)button) {
+			case Button.A:
 				_isJumpHeld = false;
 				break;
 
-			case Input.Button.B:
+			case Button.B:
 				_isSprintHeld = false;
 				break;
 
-			case Input.Button.R3:
+			case Button.R3:
 				_isSneakHeld = false;
 				break;
 		}

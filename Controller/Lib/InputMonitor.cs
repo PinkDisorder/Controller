@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Controller.Enums;
 
-namespace Controller;
+namespace Controller.Lib;
 
 public class InputMonitor : IRenderer {
 	// TODO: make these configurable
@@ -19,8 +20,8 @@ public class InputMonitor : IRenderer {
 
 	public event Action<int, int>? OnButtonDown;
 	public event Action<int, int>? OnButtonUp;
-	public event Action<int, Input.Stick, float, float>? OnStickUpdate;
-	public event Action<int, Input.Trigger, float>? OnTriggerUpdate;
+	public event Action<int, Stick, float, float>? OnStickUpdate;
+	public event Action<int, Trigger, float>? OnTriggerUpdate;
 
 	// IRenderer properties
 	public double RenderOrder => 1.0;
@@ -53,11 +54,11 @@ public class InputMonitor : IRenderer {
 		ReadOnlySpan<float> axes = GLFW.GetJoystickAxes(jid);
 		if (axes.IsEmpty) return;
 
-		HandleStick(jid, Input.Stick.Left, 0, 1, axes);
-		HandleStick(jid, Input.Stick.Right, 2, 5, axes);
+		HandleStick(jid, Stick.Left, 0, 1, axes);
+		HandleStick(jid, Stick.Right, 2, 5, axes);
 
-		HandleTrigger(jid, Input.Trigger.Lt, 3, axes);
-		HandleTrigger(jid, Input.Trigger.Rt, 4, axes);
+		HandleTrigger(jid, Trigger.Lt, 3, axes);
+		HandleTrigger(jid, Trigger.Rt, 4, axes);
 	}
 
 	private void HandleButtonChange(int jid, int button, bool pressed) {
@@ -72,7 +73,7 @@ public class InputMonitor : IRenderer {
 		}
 	}
 
-	private void HandleStick(int jid, Input.Stick stick, int xAxis, int yAxis, ReadOnlySpan<float> axes) {
+	private void HandleStick(int jid, Stick stick, int xAxis, int yAxis, ReadOnlySpan<float> axes) {
 		if (axes.Length <= Math.Max(xAxis, yAxis)) return; 
 
 
@@ -91,7 +92,7 @@ public class InputMonitor : IRenderer {
 		}
 	}
 
-	private void HandleTrigger(int jid, Input.Trigger trigger, int axis, ReadOnlySpan<float> axes) {
+	private void HandleTrigger(int jid, Trigger trigger, int axis, ReadOnlySpan<float> axes) {
 		if (axes.Length <= axis) return;
 
 		float value = axes[axis];
