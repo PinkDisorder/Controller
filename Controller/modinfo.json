@@ -1,0 +1,10 @@
+{
+  "type": "code",
+  "modid": "controller",
+  "name": "VividVoid's Controller Mod",
+  "side": "client",
+  "authors": [ "VividVoid" ],
+  "description": "",
+  "version": "1.0.0",
+  "dependencies": { "game": "" }
+}

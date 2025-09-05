@@ -1,0 +1,7 @@
+bin/
+obj/
+Releases/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+Controller.sln.DotSettings.user
