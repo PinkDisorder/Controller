@@ -61,24 +61,21 @@ public class InputHandler(ICoreClientAPI api) {
 			_cameraPitch = clientPlayer.CameraPitch;
 			_cameraInitialized = true;
 		}
-		
-		// Apply deadzone
+
 		float dx = Math.Abs(_rightStick.X) > InputMonitor.Deadzone ? _rightStick.X * RightStickSensitivity : 0f;
 		float dy = Math.Abs(_rightStick.Y) > InputMonitor.Deadzone ? _rightStick.Y * RightStickSensitivity : 0f;
 
-		// Update camera yaw/pitch
 		_cameraYaw -= dx;
-		_cameraPitch += dy; // invert Y for natural look
+		_cameraPitch += dy;
 
-		// Clamp pitch
 		_cameraPitch = Math.Clamp(_cameraPitch, -89f, 89f);
 
-		// Apply to client camera
 		clientPlayer.CameraYaw = (float)_cameraYaw;
 		clientPlayer.CameraPitch = (float)_cameraPitch;
 
 		Capi.Input.MouseYaw = (float)_cameraYaw;
 		Capi.Input.MousePitch = (float)_cameraPitch;
+
 		// Apply horizontal rotation to entity for server sync
 		entity.ServerPos.Yaw = (float)_cameraYaw;
 	}
