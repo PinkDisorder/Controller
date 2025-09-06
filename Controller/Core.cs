@@ -1,13 +1,9 @@
-﻿// using HarmonyLib;
-// using Vintagestory.API.Config;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Controller.Config;
 using Controller.Lib;
-using Controller.Enums;
-
 
 namespace Controller;
 
@@ -20,6 +16,8 @@ public class Core : ModSystem {
 	private static ICoreServerAPI Sapi { get; set; }
 
 	public static ModConfig Config => ConfigLoader.Config;
+
+	public static InputHandler ClientInputHandler { get; set; }
 
 	private readonly InputMonitor _inputMonitor = new(Logger);
 
@@ -34,23 +32,20 @@ public class Core : ModSystem {
 		ModId = Mod.Info.ModID;
 
 		base.StartClientSide(api);
-		var handler = new InputHandler(api);
+		ClientInputHandler = new InputHandler(api);
 
 		Capi.Event.RegisterRenderer(_inputMonitor, EnumRenderStage.Opaque);
 
-		_inputMonitor.OnButtonDown += (i, i1) => { Logger.Chat($"Pressed {(Button)i1}"); };
+		_inputMonitor.OnStickUpdate += ClientInputHandler.OnStickUpdateHandler;
 
-		_inputMonitor.OnTriggerUpdate += (jid, trigger, amount) => { Logger.Chat($"Pressed {trigger} {amount}"); };
+		_inputMonitor.OnButtonDown += ClientInputHandler.OnButtonDownHandler;
 
-		_inputMonitor.OnStickUpdate += ((i, stick, x, y) => { Logger.Chat($"Moved {stick} to x: {x}  y: {y}"); });
-
-		_inputMonitor.OnButtonDown += handler.OnButtonDownHandler;
-
-		_inputMonitor.OnButtonUp += handler.OnButtonUpHandler;
-		Capi.Event.RegisterGameTickListener(dt => handler.ApplyInputs(), 0);
-
+		_inputMonitor.OnButtonUp += ClientInputHandler.OnButtonUpHandler;
+		Capi.Event.RegisterGameTickListener(dt => {
+			ClientInputHandler.ApplyInputs();
+			ClientInputHandler.ApplyRightStickCamera();
+		}, 0);
 	}
 
 	// EntityAgent class is what handles movement
-
 }
