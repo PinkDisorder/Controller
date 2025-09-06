@@ -11,7 +11,7 @@ namespace Controller.Lib;
 
 public class InputMonitor : IRenderer {
 	// TODO: make these configurable
-	private const float Deadzone = 0.15f;
+	public const float Deadzone = 0.15f;
 	private const float NoiseThreshold = 0.02f;
 
 	private readonly Dictionary<int, bool> _buttonStates;
