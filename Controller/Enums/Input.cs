@@ -6,21 +6,28 @@ public enum Button {
 	A = 1,
 	B = 2,
 	Y = 3,
-	LeftBumper = 4,
-	RightBumper = 5,
-	LeftTrigger = 6,
-	RightTrigger = 7,
-	Back = 8,
-	Start = 9,
+
+	Lb = 4,
+	Rb = 5,
+
+	Lt = 6,
+	Rt = 7,
+
 	L3 = 10,
 	R3 = 11,
+
+	Back = 8,
+	Start = 9,
+
 	Guide = 12,
 	TouchpadClick = 13,
 	Mute = 14,
+
 	DPadUp = 15,
 	DPadRight = 16,
 	DPadDown = 17,
 	DPadLeft = 18,
+
 	Unknown
 }
 

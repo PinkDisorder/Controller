@@ -1,11 +1,11 @@
 #nullable enable
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using Controller.Enums;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Controller.Enums;
 
 namespace Controller.Lib;
 

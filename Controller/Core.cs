@@ -17,8 +17,6 @@ public class Core : ModSystem {
 
 	public static ModConfig Config => ConfigLoader.Config;
 
-	public static InputHandler ClientInputHandler { get; set; }
-
 	private readonly InputMonitor _inputMonitor = new(Logger);
 
 	// public override void StartServerSide(ICoreServerAPI api) {
@@ -32,18 +30,20 @@ public class Core : ModSystem {
 		ModId = Mod.Info.ModID;
 
 		base.StartClientSide(api);
-		ClientInputHandler = new InputHandler(api);
+		InputHandler input = new(api);
+		CameraHandler camera = new(api);
 
 		Capi.Event.RegisterRenderer(_inputMonitor, EnumRenderStage.Opaque);
 
-		_inputMonitor.OnStickUpdate += ClientInputHandler.OnStickUpdateHandler;
+		_inputMonitor.OnStickUpdate += input.HandleLeftStick;
+		_inputMonitor.OnStickUpdate += camera.HandleRightStick;
+		
+		_inputMonitor.OnButtonDown += input.HandleButtonDown;
+		_inputMonitor.OnButtonUp += input.HandleButtonUp;
 
-		_inputMonitor.OnButtonDown += ClientInputHandler.OnButtonDownHandler;
-
-		_inputMonitor.OnButtonUp += ClientInputHandler.OnButtonUpHandler;
 		Capi.Event.RegisterGameTickListener(dt => {
-			ClientInputHandler.ApplyInputs();
-			ClientInputHandler.ApplyRightStickCamera();
+			input.ApplyInputs();
+			camera.ApplyRightStickCamera();
 		}, 0);
 	}
 
