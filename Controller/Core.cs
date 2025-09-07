@@ -17,8 +17,6 @@ public class Core : ModSystem {
 
 	public static ModConfig Config => ConfigLoader.Config;
 
-	private readonly InputMonitor _inputMonitor = new(Logger);
-
 	// public override void StartServerSide(ICoreServerAPI api) {
 	// 	base.StartServerSide(api);
 	// 	Sapi = api;
@@ -30,21 +28,20 @@ public class Core : ModSystem {
 		ModId = Mod.Info.ModID;
 
 		base.StartClientSide(api);
+		InputMonitor inputMonitor = new(Logger);
 		InputHandler input = new(api);
 		CameraHandler camera = new(api);
 
-		Capi.Event.RegisterRenderer(_inputMonitor, EnumRenderStage.Opaque);
+		Capi.Event.RegisterRenderer(inputMonitor, EnumRenderStage.Before);
+		Capi.Event.RegisterRenderer(camera, EnumRenderStage.Before);
 
-		_inputMonitor.OnStickUpdate += input.HandleLeftStick;
-		_inputMonitor.OnStickUpdate += camera.HandleRightStick;
-		
-		_inputMonitor.OnButtonDown += input.HandleButtonDown;
-		_inputMonitor.OnButtonUp += input.HandleButtonUp;
+		inputMonitor.OnStickUpdate += input.HandleLeftStick;
+		inputMonitor.OnStickUpdate += camera.HandleRightStick;
 
-		Capi.Event.RegisterGameTickListener(dt => {
-			input.ApplyInputs();
-			camera.ApplyRightStickCamera();
-		}, 0);
+		inputMonitor.OnButtonDown += input.HandleButtonDown;
+		inputMonitor.OnButtonUp += input.HandleButtonUp;
+
+		Capi.Event.RegisterGameTickListener(dt => { input.ApplyInputs(); }, 0);
 	}
 
 	// EntityAgent class is what handles movement

@@ -28,12 +28,10 @@ public class InputHandler(ICoreClientAPI api) {
 
 
 	public void HandleLeftStick(int jid, Stick stick, float x, float y) {
-		// Y axes need to be inverted on both sticks.
-		// Uncertain if this is PS5 controller specific or happens for xbox too.
 		// TODO: Config stick axis inverting.
 		if (stick != Stick.Left) return;
 		_leftStick.X = x;
-		_leftStick.Y = -y;
+		_leftStick.Y = y;
 	}
 
 
