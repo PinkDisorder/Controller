@@ -33,7 +33,6 @@ public class Core : ModSystem {
 		CameraHandler camera = new(api);
 
 		Capi.Event.RegisterRenderer(inputMonitor, EnumRenderStage.Before);
-		Capi.Event.RegisterRenderer(camera, EnumRenderStage.Before);
 
 		inputMonitor.OnStickUpdate += input.HandleLeftStick;
 		inputMonitor.OnStickUpdate += camera.HandleRightStick;
@@ -41,7 +40,10 @@ public class Core : ModSystem {
 		inputMonitor.OnButtonDown += input.HandleButtonDown;
 		inputMonitor.OnButtonUp += input.HandleButtonUp;
 
-		Capi.Event.RegisterGameTickListener(dt => { input.ApplyInputs(); }, 0);
+		Capi.Event.RegisterGameTickListener(dt => {
+			input.ApplyInputs();
+			camera.ApplyRightStickCamera();
+		}, 0);
 	}
 
 	// EntityAgent class is what handles movement
