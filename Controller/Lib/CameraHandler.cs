@@ -3,31 +3,31 @@ using Controller.Enums;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
-public class CameraHandler : IRenderer {
+public class CameraHandler {
 	private readonly Vec2f _rightStick = new(0, 0);
 
 	readonly ICoreClientAPI capi;
 
 	// TODO: Put me in the config
-	private const float Sensitivity = 0.05f;
-	private float _cameraYaw;
-	private float _cameraPitch;
+	private const float SensitivityYaw = 0.05f;
+	private const float SensitivityPitch = 0.1f;
+
+
+	private float _accumulatedPitch;
+	private const float PitchClampMin = (float)(Math.PI / 2);
+	private const float PitchClampMax = (float)((Math.PI * 3) / 2);
 
 	public CameraHandler(ICoreClientAPI api) {
 		capi = api;
 		IClientPlayer clientPlayer = capi.World.Player;
 		if (clientPlayer == null) return;
-		_cameraYaw = clientPlayer.CameraYaw; // radians
-		_cameraPitch = clientPlayer.CameraPitch; // radians
-	}
 
-	public void Dispose() { }
-	public double RenderOrder => 0d;
-	public int RenderRange => 0;
-	public void OnRenderFrame(float deltaTime, EnumRenderStage stage) => ApplyRightStickCamera();
+		_accumulatedPitch = clientPlayer.CameraPitch;
+	}
 
 	public void HandleRightStick(int jid, Stick stick, float x, float y) {
 		// Y axes need to be inverted on both sticks.
@@ -35,53 +35,61 @@ public class CameraHandler : IRenderer {
 		// TODO: Config stick axis inverting.
 		if (stick != Stick.Right) return;
 		_rightStick.X = x;
-		_rightStick.Y = y;
+		_rightStick.Y = -y;
 	}
-	
-	private void ApplyRightStickCamera() {
+
+	public void ApplyRightStickCamera() {
 		IClientPlayer clientPlayer = capi.World.Player;
 		EntityPlayer entityPlayer = clientPlayer?.Entity;
 		if (entityPlayer == null) return;
 
-		// Compute deltas from stick input
-		float dx = Math.Abs(_rightStick.X) > InputMonitor.Deadzone ? _rightStick.X * Sensitivity : 0f;
-		float dy = Math.Abs(_rightStick.Y) > InputMonitor.Deadzone ? _rightStick.Y * Sensitivity : 0f;
+		// Get current camera angles
+		// Yaw can be read from the clientPlayer but pitch has to be treated
+		// in an accumulative manner otherwise everything breaks.
+		float yaw = clientPlayer.CameraYaw;
+		float pitch = _accumulatedPitch;
 
-		// Accumulate deltas into authoritative camera state
-		_cameraYaw -= dx;
-		_cameraPitch -= dy;
+		// X is horizontal camera movement
+		if (Math.Abs(_rightStick.X) > InputMonitor.Deadzone) {
+			yaw += -_rightStick.X * SensitivityYaw;
+			yaw = GameMath.Mod(yaw, GameMath.TWOPI);
+		}
 
-		// Clamp pitch to prevent head flip
-		const float maxPitchRad = 85f * (float)Math.PI / 180f;
-		_cameraPitch = Math.Clamp(_cameraPitch, -maxPitchRad, maxPitchRad);
-		
-		clientPlayer.CameraYaw = _cameraYaw;
-		clientPlayer.CameraPitch = _cameraPitch;
-		capi.Input.MouseYaw = _cameraYaw;
-		capi.Input.MousePitch = _cameraPitch;
+		// Y is vertical camera movement
+		if (Math.Abs(_rightStick.Y) > InputMonitor.Deadzone) {
+			pitch += -_rightStick.Y * SensitivityPitch;
+			pitch = Math.Clamp(pitch, PitchClampMin, PitchClampMax);
+			_accumulatedPitch = pitch;
+		}
 
-		// Head Yaw is not in Radians
-		entityPlayer.Pos.HeadYaw = _cameraYaw;
-		entityPlayer.Pos.Yaw = entityPlayer.Pos.HeadYaw;
+		// Always update camera and mouse
+		clientPlayer.CameraYaw = yaw;
+		clientPlayer.CameraPitch = pitch;
+		capi.Input.MouseYaw = yaw;
+		capi.Input.MousePitch = pitch;
 
-		// === Block highlighting (unchanged) ===
-		Vec3d clientCameraPos = entityPlayer.Pos.XYZ.Clone().Add(0, entityPlayer.LocalEyePos.Y, 0);
-		float reach = clientPlayer.WorldData.PickingRange;
+		UpdateBlockTarget(pitch, yaw);
+	}
+
+	private void UpdateBlockTarget(float pitch, float yaw) {
+		// Block selection and highlighting
+		IClientPlayer player = capi.World.Player;
+		Vec3d clientCameraPos = player.Entity.Pos.XYZ.Clone().Add(0, player.Entity.LocalEyePos.Y, 0);
+		float reach = player.WorldData.PickingRange;
 
 		BlockSelection blockSel = null;
 		EntitySelection entSel = null;
-		capi.World.RayTraceForSelection(clientCameraPos, _cameraPitch, _cameraYaw, reach, ref blockSel, ref entSel);
+		capi.World.RayTraceForSelection(clientCameraPos, pitch, yaw, reach, ref blockSel, ref entSel);
 
-		entityPlayer.BlockSelection = blockSel;
-		entityPlayer.EntitySelection = entSel;
-
-		// Clear previous highlight
-		capi.World.HighlightBlocks(capi.World.Player, 0, []);
-
-		if (blockSel == null) return;
+		player.Entity.BlockSelection = blockSel;
+		player.Entity.EntitySelection = entSel;
+		if (blockSel == null) {
+			capi.World.HighlightBlocks(player, 0, []);
+			return;
+		}
 
 		capi.World.HighlightBlocks(
-			capi.World.Player,
+			player,
 			0,
 			[blockSel.Position],
 			EnumHighlightBlocksMode.CenteredToSelectedBlock,
