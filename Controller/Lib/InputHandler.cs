@@ -20,9 +20,9 @@ public class InputHandler(ICoreClientAPI api) {
 		player.Controls.Sprint = State.Buttons.Get(Button.L3).IsHeld;
 		player.Controls.Sneak = State.Buttons.Get(Button.R3).IsPressed;
 
-		player.Controls.Forward = _leftStick.Y > InputMonitor.Deadzone;
-		player.Controls.Backward = _leftStick.Y < -InputMonitor.Deadzone;
+		player.Controls.Forward = _leftStick.Y < -InputMonitor.Deadzone;
 		player.Controls.Right = _leftStick.X > InputMonitor.Deadzone;
+		player.Controls.Backward = _leftStick.Y > InputMonitor.Deadzone;
 		player.Controls.Left = _leftStick.X < -InputMonitor.Deadzone;
 	}
 
