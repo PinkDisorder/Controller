@@ -1,59 +1,46 @@
 using System.Collections.Generic;
-using Controller.Enums;
-using JetBrains.Annotations;
+using Controller.Lib.Util;
 
 namespace Controller.Lib;
 
-public static class State {
-	public static readonly Dictionary<Button, ButtonInput> Buttons = new() {
-		{ Button.X, new ButtonInput() },
-		{ Button.A, new ButtonInput() },
-		{ Button.B, new ButtonInput() },
-		{ Button.Y, new ButtonInput() },
+public class State {
+	private readonly Dictionary<int, ButtonInput> _buttonsByCode = new();
+	private readonly Dictionary<string, ButtonInput> _buttonsByName = new();
 
-		{ Button.Rb, new ButtonInput() },
-		{ Button.Lb, new ButtonInput() },
-
-		{ Button.Rt, new ButtonInput() },
-		{ Button.Lt, new ButtonInput() },
-
-		{ Button.R3, new ButtonInput() },
-		{ Button.L3, new ButtonInput() },
-
-		{ Button.Start, new ButtonInput() },
-		{ Button.Back, new ButtonInput() },
-
-		{ Button.DPadUp, new ButtonInput() },
-		{ Button.DPadRight, new ButtonInput() },
-		{ Button.DPadDown, new ButtonInput() },
-		{ Button.DPadLeft, new ButtonInput() },
-
-		{ Button.Guide, new ButtonInput() },
-		// PS5 specific
-		{ Button.TouchpadClick, new ButtonInput() },
-		{ Button.Mute, new ButtonInput() },
-		// Steam Deck specific
-		// TODO: Get the input codes for these.
-		// { Button.L4, new ButtonInput()},
-		// { Button.R4, new ButtonInput()},
-		// { Button.L5, new ButtonInput()},
-		// { Button.R5, new ButtonInput()}
-	};
-
-	public class ButtonInput(int heldThreshold = 30) {
-		private int HeldCounter { get; set; }
-
-		public bool IsPressed => HeldCounter > 0;
-		public bool IsHeld => HeldCounter > heldThreshold;
-
-		public void OnPress() {
-			// No point in exceeding this.
-			if (HeldCounter > heldThreshold) return;
-			HeldCounter++;
+	private void Register(params ButtonInput[] buttons) {
+		foreach (ButtonInput button in buttons) {
+			_buttonsByName.Add(button.Name, button);
+			_buttonsByCode.Add(button.Code, button);
 		}
+	}
 
-		public void OnRelease() {
-			HeldCounter = 0;
-		}
+	public ButtonInput Get(int code) {
+		return _buttonsByCode[code];
+	}
+
+	public ButtonInput Get(string name) {
+		return _buttonsByName[name];
+	}
+
+	public State() {
+		Register(
+			new ButtonInput("A"),
+			new ButtonInput("B"),
+			new ButtonInput("X"),
+			new ButtonInput("Y"),
+			new ButtonInput("Rb"),
+			new ButtonInput("Lb"),
+			new ButtonInput("Rt"),
+			new ButtonInput("Lt"),
+			new ButtonInput("R3"),
+			new ButtonInput("L3"),
+			new ButtonInput("Start"),
+			new ButtonInput("Back"),
+			new ButtonInput("DPadUp"),
+			new ButtonInput("DPadRight"),
+			new ButtonInput("DPadDown"),
+			new ButtonInput("DPadLeft"),
+			new ButtonInput("Guide")
+		);
 	}
 }
