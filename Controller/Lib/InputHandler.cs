@@ -4,14 +4,10 @@ using Vintagestory.API.MathTools;
 
 namespace Controller.Lib;
 
-public class InputHandler(ICoreClientAPI api, int? jid) {
-	private readonly Vec2f _leftStick = new(0, 0);
-
-	private readonly State _state = new();
-
-	public void HandlePress(int _, int button) => _state.Get(button)?.OnPress();
-	public void HandleRelease(int _, int button) => _state.Get(button)?.OnRelease();
-	public void HandleLeftStick(float x, float y) => (_leftStick.X, _leftStick.Y) = (x, y);
+public class InputHandler(ICoreClientAPI api, State state, int? jid) {
+	public void HandlePress(int _, int button) => state.Get(button)?.OnPress();
+	public void HandleRelease(int _, int button) => state.Get(button)?.OnRelease();
+	public void HandleLeftStick(float x, float y) => state.LeftStick.Update(x, y);
 
 
 	private void TriggerHotKey(string internalKeyCode) {
@@ -25,13 +21,13 @@ public class InputHandler(ICoreClientAPI api, int? jid) {
 		if (player == null) return;
 		if (jid == null) return;
 
-		player.Controls.Jump = _state.Get("A").IsPressed || _state.Get("A").IsHeld;
-		player.Controls.Sprint = _state.Get("L3").IsHeld;
-		player.Controls.Sneak = _state.Get("R3").IsPressed;
+		player.Controls.Jump = state.Get("A").IsPressed || state.Get("A").IsHeld;
+		player.Controls.Sprint = state.Get("L3").IsHeld;
+		player.Controls.Sneak = state.Get("R3").IsPressed;
 
-		player.Controls.Forward = _leftStick.Y < -InputMonitor.Deadzone;
-		player.Controls.Right = _leftStick.X > InputMonitor.Deadzone;
-		player.Controls.Backward = _leftStick.Y > InputMonitor.Deadzone;
-		player.Controls.Left = _leftStick.X < -InputMonitor.Deadzone;
+		player.Controls.Forward = state.LeftStick.Y < -InputMonitor.Deadzone;
+		player.Controls.Right = state.LeftStick.X > InputMonitor.Deadzone;
+		player.Controls.Backward = state.LeftStick.Y > InputMonitor.Deadzone;
+		player.Controls.Left = state.LeftStick.X < -InputMonitor.Deadzone;
 	}
 }

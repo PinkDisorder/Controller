@@ -7,6 +7,9 @@ public class State {
 	private readonly Dictionary<int, ButtonInput> _buttonsByCode = new();
 	private readonly Dictionary<string, ButtonInput> _buttonsByName = new();
 
+	public readonly AnalogueStick LeftStick = new(0, 0);
+	public AnalogueStick RightStick = new(0, 0);
+	
 	private void Register(params ButtonInput[] buttons) {
 		foreach (ButtonInput button in buttons) {
 			_buttonsByName.Add(button.Name, button);

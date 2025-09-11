@@ -17,20 +17,20 @@ public class Core : ModSystem {
 
 	public static ModConfig Config => ConfigLoader.Config;
 
-	// public override void StartServerSide(ICoreServerAPI api) {
-	// 	base.StartServerSide(api);
-	// 	Sapi = api;
-	// }
-
 	public override void StartClientSide(ICoreClientAPI api) {
 		Logger = Mod.Logger;
 		Capi = api;
 		ModId = Mod.Info.ModID;
 
 		base.StartClientSide(api);
+
+		State state = new();
+
 		InputMonitor inputMonitor = new(Logger);
-		InputHandler input = new(api, inputMonitor.PrimaryJoystick);
-		CameraHandler camera = new(api);
+
+		InputHandler input = new(api, state, inputMonitor.PrimaryJoystick);
+
+		CameraHandler camera = new(api, state);
 
 		Capi.Event.RegisterRenderer(inputMonitor, EnumRenderStage.Before);
 
