@@ -6,23 +6,28 @@ namespace Controller.Lib.Util;
 public class ButtonInput {
 	public readonly int Code;
 	public readonly string Name;
-	private int HeldCounter { get; set; }
 
-	public bool IsPressed => HeldCounter > 0;
-	public bool IsHeld => HeldCounter > _heldThreshold;
+	private const float HeldThreshold = 0.5f;
+	
+	private const float DeltaThreshold = HeldThreshold + 0.1f;
 
-	public void OnPress() {
+	private float DeltaTime { get; set; }
+
+	public bool IsPressed => DeltaTime is > 0 and < HeldThreshold;
+
+	public bool IsHeld => DeltaTime > HeldThreshold;
+
+	public bool IsActive => DeltaTime > 0;
+	
+	public void OnPress(float deltaTime) {
 		// No point in exceeding this.
-		if (HeldCounter > _heldThreshold) return;
-		HeldCounter++;
+		if (DeltaTime >= DeltaThreshold) return;
+		DeltaTime += deltaTime;
 	}
 
+	public void OnRelease() => DeltaTime = 0;
 
-	private readonly int _heldThreshold;
-
-	public ButtonInput(string name, int heldThreshold = 30) {
-		_heldThreshold = heldThreshold;
-
+	public ButtonInput(string name) {
 		Name = name;
 
 		if (name.Contains("DualSense")) {
@@ -39,10 +44,5 @@ public class ButtonInput {
 
 		Enum.TryParse(name, out Xbox xb);
 		Code = (int)xb;
-	}
-
-
-	public void OnRelease() {
-		HeldCounter = 0;
 	}
 }
