@@ -32,9 +32,12 @@ public class InputMonitor : IRenderer {
 
 	public InputMonitor(ILogger logger) {
 		_logger = logger;
+		// Scan for a joystick
 		PrimaryJoystick = Enumerable.Range(0, 16).FirstOrDefault(GLFW.JoystickPresent, -1);
 
-		if (PrimaryJoystick == -1) PrimaryJoystick = null;
+		if (PrimaryJoystick == -1) {
+			PrimaryJoystick = null;
+		}
 
 		_buttonStates = Enumerable.Range(0, 32).ToDictionary(i => i, _ => false);
 		_axisStates = Enumerable.Range(0, 32).ToDictionary(i => i, _ => 0f);
@@ -47,16 +50,13 @@ public class InputMonitor : IRenderer {
 		int jid = PrimaryJoystick.Value;
 		// Immediately exit on disconnected joystick.
 		if (!GLFW.JoystickPresent(jid)) return;
-		string name = GLFW.GetJoystickName(jid);
-		_logger.Chat($"[controller] found controller with name: {name}");
-		// Buttons
+		// _logger.Debug($"[controller] found controller with name: {GLFW.GetJoystickName(jid)}");
 		ReadOnlySpan<JoystickInputAction> buttons = GLFW.GetJoystickButtons(jid);
+
 		for (int b = 0; b < buttons.Length; b++) {
-			// TODO: Correct the pressed thing which is actually a Press/Released enum.
 			UpdateButtonState(jid, b, buttons[b] == JoystickInputAction.Press);
 		}
 
-		// Axes
 		ReadOnlySpan<float> axes = GLFW.GetJoystickAxes(jid);
 		if (axes.IsEmpty) return;
 
