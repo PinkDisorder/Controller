@@ -12,7 +12,7 @@ namespace Controller;
 public class Core : ModSystem {
 	private static ILogger Logger { get; set; }
 
-	public static string ModId { get; private set; }
+	[UsedImplicitly] public static string ModId { get; private set; }
 	private static ICoreClientAPI Capi { get; set; }
 
 	public static ModConfig Config => ConfigLoader.Config;
@@ -26,7 +26,7 @@ public class Core : ModSystem {
 
 		State state = new();
 
-		InputMonitor inputMonitor = new(Logger);
+		InputMonitor inputMonitor = new(Logger, state);
 
 		InputHandler input = new(api, state, inputMonitor.PrimaryJoystick);
 
@@ -34,7 +34,7 @@ public class Core : ModSystem {
 
 		Capi.Event.RegisterRenderer(inputMonitor, EnumRenderStage.Before);
 
-		inputMonitor.OnStickUpdate += (jid, stick, x, y) => {
+		inputMonitor.OnStickUpdate += (_, stick, x, y) => {
 			switch (stick) {
 				case Stick.Left:
 					input.HandleLeftStick(x, y);
@@ -48,10 +48,8 @@ public class Core : ModSystem {
 			}
 		};
 
-		inputMonitor.OnButtonDown += input.HandlePress;
-		inputMonitor.OnButtonUp += input.HandleRelease;
 
-		inputMonitor.OnButtonDown += (jid, btn) => Capi.Logger.Debug($"Pressed {btn}");
+		inputMonitor.OnPress += (jid, btn) => Capi.Logger.Debug($"Pressed {btn}");
 
 		Capi.Event.RegisterGameTickListener(dt => {
 			input.ApplyInputs();
