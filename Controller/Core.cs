@@ -1,8 +1,9 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
 using Controller.Config;
+using Controller.Enums;
 using Controller.Lib;
 
 namespace Controller;
@@ -13,7 +14,6 @@ public class Core : ModSystem {
 
 	public static string ModId { get; private set; }
 	private static ICoreClientAPI Capi { get; set; }
-	private static ICoreServerAPI Sapi { get; set; }
 
 	public static ModConfig Config => ConfigLoader.Config;
 
@@ -29,22 +29,33 @@ public class Core : ModSystem {
 
 		base.StartClientSide(api);
 		InputMonitor inputMonitor = new(Logger);
-		InputHandler input = new(api);
+		InputHandler input = new(api, inputMonitor.PrimaryJoystick);
 		CameraHandler camera = new(api);
 
 		Capi.Event.RegisterRenderer(inputMonitor, EnumRenderStage.Before);
 
-		inputMonitor.OnStickUpdate += input.HandleLeftStick;
-		inputMonitor.OnStickUpdate += camera.HandleRightStick;
+		inputMonitor.OnStickUpdate += (jid, stick, x, y) => {
+			switch (stick) {
+				case Stick.Left:
+					input.HandleLeftStick(x, y);
+					break;
+				case Stick.Right:
+					camera.HandleRightStick(x, y);
+					break;
+				default:
+					Logger.Error(new ArgumentOutOfRangeException(nameof(stick), stick, null));
+					break;
+			}
+		};
 
-		inputMonitor.OnButtonDown += input.HandleButtonDown;
-		inputMonitor.OnButtonUp += input.HandleButtonUp;
+		inputMonitor.OnButtonDown += input.HandlePress;
+		inputMonitor.OnButtonUp += input.HandleRelease;
+
+		inputMonitor.OnButtonDown += (jid, btn) => Capi.Logger.Debug($"Pressed {btn}");
 
 		Capi.Event.RegisterGameTickListener(dt => {
 			input.ApplyInputs();
 			camera.ApplyRightStickCamera();
 		}, 0);
 	}
-
-	// EntityAgent class is what handles movement
 }

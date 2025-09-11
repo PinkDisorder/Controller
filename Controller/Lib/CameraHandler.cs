@@ -21,6 +21,9 @@ public class CameraHandler {
 	private const float PitchClampMin = (float)(Math.PI / 2);
 	private const float PitchClampMax = (float)((Math.PI * 3) / 2);
 
+	// Y axes need to be inverted on RS.
+	public void HandleRightStick(float x, float y) => (_rightStick.X, _rightStick.Y) = (x, -y);
+
 	public CameraHandler(ICoreClientAPI api) {
 		capi = api;
 		IClientPlayer clientPlayer = capi.World.Player;
@@ -29,14 +32,6 @@ public class CameraHandler {
 		_accumulatedPitch = clientPlayer.CameraPitch;
 	}
 
-	public void HandleRightStick(int jid, Stick stick, float x, float y) {
-		// Y axes need to be inverted on both sticks.
-		// Uncertain if this is PS5 controller specific or happens for xbox too.
-		// TODO: Config stick axis inverting.
-		if (stick != Stick.Right) return;
-		_rightStick.X = x;
-		_rightStick.Y = -y;
-	}
 
 	public void ApplyRightStickCamera() {
 		IClientPlayer clientPlayer = capi.World.Player;
@@ -72,7 +67,6 @@ public class CameraHandler {
 	}
 
 	private void UpdateBlockTarget(float pitch, float yaw) {
-		// Block selection and highlighting
 		IClientPlayer player = capi.World.Player;
 		Vec3d clientCameraPos = player.Entity.Pos.XYZ.Clone().Add(0, player.Entity.LocalEyePos.Y, 0);
 		float reach = player.WorldData.PickingRange;
@@ -92,8 +86,7 @@ public class CameraHandler {
 			player,
 			0,
 			[blockSel.Position],
-			EnumHighlightBlocksMode.CenteredToSelectedBlock,
-			EnumHighlightShape.Arbitrary
+			EnumHighlightBlocksMode.CenteredToSelectedBlock
 		);
 	}
 }

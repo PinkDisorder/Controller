@@ -1,38 +1,17 @@
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Util;
-using Controller.Enums;
-
 
 namespace Controller.Lib;
 
-public class InputHandler(ICoreClientAPI api) {
+public class InputHandler(ICoreClientAPI api, int? jid) {
 	private readonly Vec2f _leftStick = new(0, 0);
 
+	private readonly State _state = new();
 
-	// Call me every tick
-	public void ApplyInputs() {
-		EntityPlayer player = api.World.Player?.Entity;
-		if (player == null) return;
-
-		player.Controls.Jump = State.Buttons.Get(Button.A).IsPressed || State.Buttons.Get(Button.A).IsHeld;
-		player.Controls.Sprint = State.Buttons.Get(Button.L3).IsHeld;
-		player.Controls.Sneak = State.Buttons.Get(Button.R3).IsPressed;
-
-		player.Controls.Forward = _leftStick.Y < -InputMonitor.Deadzone;
-		player.Controls.Right = _leftStick.X > InputMonitor.Deadzone;
-		player.Controls.Backward = _leftStick.Y > InputMonitor.Deadzone;
-		player.Controls.Left = _leftStick.X < -InputMonitor.Deadzone;
-	}
-
-
-	public void HandleLeftStick(int jid, Stick stick, float x, float y) {
-		// TODO: Config stick axis inverting.
-		if (stick != Stick.Left) return;
-		_leftStick.X = x;
-		_leftStick.Y = y;
-	}
+	public void HandlePress(int _, int button) => _state.Get(button)?.OnPress();
+	public void HandleRelease(int _, int button) => _state.Get(button)?.OnRelease();
+	public void HandleLeftStick(float x, float y) => (_leftStick.X, _leftStick.Y) = (x, y);
 
 
 	private void TriggerHotKey(string internalKeyCode) {
@@ -40,18 +19,19 @@ public class InputHandler(ICoreClientAPI api) {
 		key.Handler(key.CurrentMapping);
 	}
 
-	// TODO: Figure out how to handle setting keybinds. A custom UI maybe?
-	public void HandleButtonDown(int jid, int button) {
+	// Call me every tick
+	public void ApplyInputs() {
 		EntityPlayer player = api.World.Player?.Entity;
 		if (player == null) return;
-		State.ButtonInput buttonResolved = State.Buttons.Get((Button)button);
-		buttonResolved?.OnPress();
-	}
+		if (jid == null) return;
 
-	public void HandleButtonUp(int jid, int button) {
-		EntityPlayer player = api.World.Player?.Entity;
-		if (player == null) return;
-		State.ButtonInput buttonResolved = State.Buttons.Get((Button)button);
-		buttonResolved?.OnRelease();
+		player.Controls.Jump = _state.Get("A").IsPressed || _state.Get("A").IsHeld;
+		player.Controls.Sprint = _state.Get("L3").IsHeld;
+		player.Controls.Sneak = _state.Get("R3").IsPressed;
+
+		player.Controls.Forward = _leftStick.Y < -InputMonitor.Deadzone;
+		player.Controls.Right = _leftStick.X > InputMonitor.Deadzone;
+		player.Controls.Backward = _leftStick.Y > InputMonitor.Deadzone;
+		player.Controls.Left = _leftStick.X < -InputMonitor.Deadzone;
 	}
 }
