@@ -1,15 +1,13 @@
 using System;
-using Controller.Enums;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
-using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
 public class CameraHandler {
 	private readonly ICoreClientAPI capi;
-	private readonly State state;
+	private readonly InputState state;
 
 	// TODO: Put me in the config
 	private const float SensitivityYaw = 0.05f;
@@ -20,10 +18,7 @@ public class CameraHandler {
 	private const float PitchClampMin = (float)(Math.PI / 2);
 	private const float PitchClampMax = (float)((Math.PI * 3) / 2);
 
-	// Y axes need to be inverted on RS.
-	public void HandleRightStick(float x, float y) => state.RightStick.Update(x, -y);
-
-	public CameraHandler(ICoreClientAPI api, State state) {
+	public CameraHandler(ICoreClientAPI api, InputState state) {
 		capi = api;
 		this.state = state;
 		IClientPlayer clientPlayer = capi.World.Player;
@@ -45,13 +40,13 @@ public class CameraHandler {
 		float pitch = _accumulatedPitch;
 
 		// X is horizontal camera movement
-		if (Math.Abs(state.RightStick.X) > InputMonitor.Deadzone) {
+		if (Math.Abs(state.RightStick.X) > Core.Config.Deadzone) {
 			yaw += -state.RightStick.X * SensitivityYaw;
 			yaw = GameMath.Mod(yaw, GameMath.TWOPI);
 		}
 
 		// Y is vertical camera movement
-		if (Math.Abs(state.RightStick.Y) > InputMonitor.Deadzone) {
+		if (Math.Abs(state.RightStick.Y) > Core.Config.Deadzone) {
 			pitch += -state.RightStick.Y * SensitivityPitch;
 			pitch = Math.Clamp(pitch, PitchClampMin, PitchClampMax);
 			_accumulatedPitch = pitch;
