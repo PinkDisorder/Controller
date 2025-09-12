@@ -2,8 +2,6 @@
 using JetBrains.Annotations;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Controller.Config;
-using Controller.Enums;
 using Controller.Lib;
 
 namespace Controller;
@@ -12,10 +10,35 @@ namespace Controller;
 public class Core : ModSystem {
 	private static ILogger Logger { get; set; }
 
+	public static ConfigData Config { get; set; }
+
 	[UsedImplicitly] public static string ModId { get; private set; }
 	private static ICoreClientAPI Capi { get; set; }
 
-	public static ModConfig Config => ConfigLoader.Config;
+	private static InputMonitor Monitor { get; set; }
+
+	private static InputState State { get; set; }
+	
+	private static CameraHandler Camera { get; set; }
+
+	private static long _tickListenerId;
+
+	public override void StartPre(ICoreAPI api) {
+		try {
+			var found = api.LoadModConfig<ConfigData>($"{Mod.Info.ModID}.json");
+			if (found != null) {
+				Config = found;
+			} else {
+				Mod.Logger.Warning("Config file could not be loaded, attempting to create it.");
+				Config = new ConfigData();
+				api.StoreModConfig(Config, "controller.json");
+			}
+		} catch (Exception e) {
+			Mod.Logger.Error("Could neither load nor create config! Loading default settings.");
+			Mod.Logger.Error(e);
+			Config = new ConfigData();
+		}
+	}
 
 	public override void StartClientSide(ICoreClientAPI api) {
 		Logger = Mod.Logger;
@@ -24,36 +47,30 @@ public class Core : ModSystem {
 
 		base.StartClientSide(api);
 
-		State state = new();
+		State = new InputState();
 
-		InputMonitor inputMonitor = new(Logger, state);
+		Monitor = new InputMonitor(Logger, State);
 
-		InputHandler input = new(api, state, inputMonitor.PrimaryJoystick);
+		InputHandler input = new(api, State, Monitor.JoyStickId);
 
-		CameraHandler camera = new(api, state);
+		Camera = new CameraHandler(api, State);
 
-		Capi.Event.RegisterRenderer(inputMonitor, EnumRenderStage.Before);
-
-		inputMonitor.OnStickUpdate += (_, stick, x, y) => {
-			switch (stick) {
-				case Stick.Left:
-					input.HandleLeftStick(x, y);
-					break;
-				case Stick.Right:
-					camera.HandleRightStick(x, y);
-					break;
-				default:
-					Logger.Error(new ArgumentOutOfRangeException(nameof(stick), stick, null));
-					break;
-			}
-		};
+		Capi.Event.RegisterRenderer(Monitor, EnumRenderStage.Before);
 
 
-		inputMonitor.OnPress += (jid, btn) => Capi.Logger.Debug($"Pressed {btn}");
-
-		Capi.Event.RegisterGameTickListener(dt => {
-			input.ApplyInputs();
-			camera.ApplyRightStickCamera();
+		_tickListenerId = Capi.Event.RegisterGameTickListener(dt => {
+			input.ApplyInputs(dt);
+			Camera.ApplyRightStickCamera();
 		}, 0);
+	}
+
+	public override void Dispose() {
+		Capi.Event.UnregisterGameTickListener(_tickListenerId);
+		Capi.Event.UnregisterRenderer(Monitor,  EnumRenderStage.Before);
+		Camera = null;
+		
+		Config = null;
+		Capi = null;
+		base.Dispose();
 	}
 }
