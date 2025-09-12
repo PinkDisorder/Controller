@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using Controller.Lib.Util;
+using Vintagestory.API.Util;
 
 namespace Controller.Lib;
 
-public class State {
+public class InputState {
 	private readonly Dictionary<int, ButtonInput> _buttonsByCode = new();
 	private readonly Dictionary<string, ButtonInput> _buttonsByName = new();
 
-	public readonly AnalogueStick LeftStick = new(0, 0);
-	public AnalogueStick RightStick = new(0, 0);
-	
+	public readonly AnalogStick LeftStick = new(0, 0);
+	public readonly AnalogStick RightStick = new(0, 0);
+
+
 	private void Register(params ButtonInput[] buttons) {
 		foreach (ButtonInput button in buttons) {
 			_buttonsByName.Add(button.Name, button);
@@ -25,7 +27,15 @@ public class State {
 		return _buttonsByName[name];
 	}
 
-	public State() {
+	public bool Contains(string name) {
+		return _buttonsByName.ContainsKey(name);
+	}
+
+	public bool Contains(int code) {
+		return _buttonsByCode.ContainsKey(code);
+	}
+
+	public InputState() {
 		Register(
 			new ButtonInput("A"),
 			new ButtonInput("B"),
