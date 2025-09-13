@@ -4,8 +4,7 @@ using Vintagestory.API.Common;
 
 namespace Controller.Lib;
 
-public class InputHandler(ICoreClientAPI api, State state, int? jid) {
-	public void HandleLeftStick(float x, float y) => state.LeftStick.Update(x, y);
+public class InputHandler(ICoreClientAPI api, InputState state, int? jid) {
 
 
 	private void TriggerHotKey(HotkeyCode internalKeyCode) {
@@ -35,14 +34,14 @@ public class InputHandler(ICoreClientAPI api, State state, int? jid) {
 			TriggerHotKey(HotkeyCode.ZoomOut);
 		}
 
-		if (state.Get("DPadUp").IsHeld) {
+		if (state.Get("DPadUp").IsLongPressed) {
 			TriggerHotKey(HotkeyCode.CycleCamera);
 		}
 		
 
-		player.Controls.Forward = state.LeftStick.Y < -InputMonitor.Deadzone;
-		player.Controls.Right = state.LeftStick.X > InputMonitor.Deadzone;
-		player.Controls.Backward = state.LeftStick.Y > InputMonitor.Deadzone;
-		player.Controls.Left = state.LeftStick.X < -InputMonitor.Deadzone;
+		player.Controls.Forward = state.LeftStick.Y < -Core.Config.Deadzone;
+		player.Controls.Right = state.LeftStick.X > Core.Config.Deadzone;
+		player.Controls.Backward = state.LeftStick.Y > Core.Config.Deadzone;
+		player.Controls.Left = state.LeftStick.X < -Core.Config.Deadzone;
 	}
 }

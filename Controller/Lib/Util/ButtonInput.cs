@@ -4,7 +4,6 @@ using Controller.Enums;
 namespace Controller.Lib.Util;
 
 public class ButtonInput(string name) {
-	
 	public readonly int Code = Core.Config.ControllerType switch {
 		"PS5" => (int)Enum.Parse<DualSense>(name, true),
 		"XBOX" => (int)Enum.Parse<Xbox>(name, true),
@@ -14,23 +13,56 @@ public class ButtonInput(string name) {
 
 	public readonly string Name = name;
 
-	private const float HeldThreshold = 0.5f;
+	private const float HeldThreshold = 0.5f; // for repeat
+	private const float RepeatInterval = 0.2f; // for repeat
+	private const float LongPressThreshold = 1.0f; // for long press (example)
 
-	private const float DeltaThreshold = HeldThreshold + 0.1f;
+	private float _deltaTime;
+	private float _nextRepeat;
+	private bool _longPressTriggered;
 
-	private float DeltaTime { get; set; }
-
-	public bool IsPressed => DeltaTime is > 0 and < HeldThreshold;
-
-	public bool IsHeld => DeltaTime > HeldThreshold;
-
-	public bool IsActive => DeltaTime > 0;
+	public bool IsPressed { get; private set; }
+	public bool IsHeldRepeat { get; private set; }
+	public bool IsLongPressed { get; private set; }
+	public bool IsActive => _deltaTime > 0;
+	public bool IsReleased { get; private set; }
 
 	public void OnPress(float deltaTime) {
-		// No point in exceeding this.
-		if (DeltaTime >= DeltaThreshold) return;
-		DeltaTime += deltaTime;
+		// Reset per-frame transient flags
+		IsPressed = false;
+		IsHeldRepeat = false;
+		IsLongPressed = false;
+		IsReleased = false;
+
+		if (_deltaTime == 0) {
+			// fresh press
+			_nextRepeat = HeldThreshold;
+			_longPressTriggered = false;
+			IsPressed = true;
+		}
+
+		_deltaTime += deltaTime;
+
+		// repeat logic
+		if (_deltaTime >= _nextRepeat) {
+			IsHeldRepeat = true;
+			_nextRepeat += RepeatInterval;
+		}
+
+		// long press logic
+		if (!(_deltaTime >= LongPressThreshold) || _longPressTriggered) return;
+		IsLongPressed = true;
+		_longPressTriggered = true;
 	}
 
-	public void OnRelease() => DeltaTime = 0;
+	public void OnRelease() {
+		_deltaTime = 0;
+		_nextRepeat = 0;
+		_longPressTriggered = false;
+
+		IsPressed = false;
+		IsHeldRepeat = false;
+		IsLongPressed = false;
+		IsReleased = true;
+	}
 }
