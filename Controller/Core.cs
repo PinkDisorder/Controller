@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Controller.Lib;
+using Controller.Lib.Util;
 
 namespace Controller;
 
@@ -18,16 +19,18 @@ public class Core : ModSystem {
 	private static InputMonitor Monitor { get; set; }
 
 	private static InputState State { get; set; }
-	
+
 	private static CameraHandler Camera { get; set; }
 
 	private static long _tickListenerId;
 
 	public override void StartPre(ICoreAPI api) {
+		Logger = Mod.Logger;
+		ModId = Mod.Info.ModID;
 		try {
-			var found = api.LoadModConfig<ConfigData>($"{Mod.Info.ModID}.json");
-			if (found != null) {
-				Config = found;
+			var cfg = api.LoadModConfig<ConfigData>($"{Mod.Info.ModID}.json");
+			if (cfg != null) {
+				Config = cfg;
 			} else {
 				Mod.Logger.Warning("Config file could not be loaded, attempting to create it.");
 				Config = new ConfigData();
@@ -41,17 +44,16 @@ public class Core : ModSystem {
 	}
 
 	public override void StartClientSide(ICoreClientAPI api) {
-		Logger = Mod.Logger;
 		Capi = api;
-		ModId = Mod.Info.ModID;
-
 		base.StartClientSide(api);
+
+		JoystickInfo joystickInfo = new();
 
 		State = new InputState();
 
-		Monitor = new InputMonitor(Logger, State);
+		Monitor = new InputMonitor(Logger, State, joystickInfo);
 
-		InputHandler input = new(api, State, Monitor.JoyStickId);
+		InputHandler input = new(api, State, joystickInfo.Id);
 
 		Camera = new CameraHandler(api, State);
 
@@ -66,7 +68,7 @@ public class Core : ModSystem {
 
 	public override void Dispose() {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
-		Capi.Event.UnregisterRenderer(Monitor,  EnumRenderStage.Before);
+		Capi.Event.UnregisterRenderer(Monitor, EnumRenderStage.Before);
 		Camera = null;
 		
 		Config = null;
