@@ -11,7 +11,7 @@ namespace Controller;
 public class Core : ModSystem {
 	private static ILogger Logger { get; set; }
 
-	public static ConfigData Config { get; set; }
+	public static ConfigData Config { get; private set; }
 
 	[UsedImplicitly] public static string ModId { get; private set; }
 	private static ICoreClientAPI Capi { get; set; }
@@ -61,7 +61,7 @@ public class Core : ModSystem {
 
 
 		_tickListenerId = Capi.Event.RegisterGameTickListener(dt => {
-			input.ApplyInputs(dt);
+			input.ApplyInputs();
 			Camera.ApplyRightStickCamera();
 		}, 0);
 	}
@@ -70,7 +70,7 @@ public class Core : ModSystem {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
 		Capi.Event.UnregisterRenderer(Monitor, EnumRenderStage.Before);
 		Camera = null;
-		
+
 		Config = null;
 		Capi = null;
 		base.Dispose();
