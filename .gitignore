@@ -51,3 +51,5 @@ project.fragment.lock.json
 
 # Rider build cache
 .gradle/
+Controller.sln.DotSettings
+Controller.sln.DotSettings.user
