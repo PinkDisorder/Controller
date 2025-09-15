@@ -1,14 +1,13 @@
 using Controller.Enums;
+using Controller.Lib.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
 namespace Controller.Lib;
 
-public class InputHandler(ICoreClientAPI api, InputState state, int? jid) {
-
-
-	private void TriggerHotKey(HotkeyCode internalKeyCode) {
-		HotKey key = api.Input.GetHotKeyByCode(internalKeyCode.ToString());
+public class InputHandler(ICoreClientAPI api, State state) {
+	private void TriggerHotKey(string hotkeyCode) {
+		HotKey key = api.Input.GetHotKeyByCode(hotkeyCode);
 		key.Handler(key.CurrentMapping);
 	}
 
@@ -16,11 +15,11 @@ public class InputHandler(ICoreClientAPI api, InputState state, int? jid) {
 	public void ApplyInputs() {
 		EntityPlayer player = api.World.Player?.Entity;
 		if (player == null) return;
-		if (jid == null) return;
+		if (state.JoystickInfo.Id == null) return;
 
-		player.Controls.Jump = state.Get("A").IsActive;
-		player.Controls.Sprint = state.Get("L3").IsActive;
-		player.Controls.Sneak = state.Get("R3").IsActive;
+		player.Controls.Jump = state.Get(Core.Config.Jump).IsActive;
+		player.Controls.Sprint = state.Get(Core.Config.Sprint).IsActive;
+		player.Controls.Sneak = state.Get(Core.Config.Sneak).IsActive;
 
 		if (state.Get("Guide").IsPressed) {
 			TriggerHotKey(HotkeyCode.BeginChat);
@@ -37,7 +36,7 @@ public class InputHandler(ICoreClientAPI api, InputState state, int? jid) {
 		if (state.Get("DPadUp").IsLongPressed) {
 			TriggerHotKey(HotkeyCode.CycleCamera);
 		}
-		
+
 
 		player.Controls.Forward = state.LeftStick.Y < -Core.Config.Deadzone;
 		player.Controls.Right = state.LeftStick.X > Core.Config.Deadzone;

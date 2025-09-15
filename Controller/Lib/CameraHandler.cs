@@ -7,7 +7,7 @@ namespace Controller.Lib;
 
 public class CameraHandler {
 	private readonly ICoreClientAPI capi;
-	private readonly InputState state;
+	private readonly State state;
 
 	// TODO: Put me in the config
 	private const float SensitivityYaw = 0.05f;
@@ -18,7 +18,7 @@ public class CameraHandler {
 	private const float PitchClampMin = (float)(Math.PI / 2);
 	private const float PitchClampMax = (float)((Math.PI * 3) / 2);
 
-	public CameraHandler(ICoreClientAPI api, InputState state) {
+	public CameraHandler(ICoreClientAPI api, State state) {
 		capi = api;
 		this.state = state;
 		IClientPlayer clientPlayer = capi.World.Player;

@@ -16,9 +16,7 @@ public class Core : ModSystem {
 	[UsedImplicitly] public static string ModId { get; private set; }
 	private static ICoreClientAPI Capi { get; set; }
 
-	private static InputMonitor Monitor { get; set; }
-
-	private static InputState State { get; set; }
+	private static Lib.State State { get; set; }
 
 	private static CameraHandler Camera { get; set; }
 
@@ -47,17 +45,13 @@ public class Core : ModSystem {
 		Capi = api;
 		base.StartClientSide(api);
 
-		JoystickInfo joystickInfo = new();
+		State = new State();
 
-		State = new InputState();
-
-		Monitor = new InputMonitor(Logger, State, joystickInfo);
-
-		InputHandler input = new(api, State, joystickInfo.Id);
+		InputHandler input = new(api, State);
 
 		Camera = new CameraHandler(api, State);
 
-		Capi.Event.RegisterRenderer(Monitor, EnumRenderStage.Before);
+		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 
 
 		_tickListenerId = Capi.Event.RegisterGameTickListener(dt => {
@@ -68,7 +62,7 @@ public class Core : ModSystem {
 
 	public override void Dispose() {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
-		Capi.Event.UnregisterRenderer(Monitor, EnumRenderStage.Before);
+		Capi.Event.UnregisterRenderer(State, EnumRenderStage.Before);
 		Camera = null;
 
 		Config = null;
