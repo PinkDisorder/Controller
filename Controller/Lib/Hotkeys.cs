@@ -1,100 +1,92 @@
-using JetBrains.Annotations;
-
 namespace Controller.Lib;
 
-public sealed record HotkeyCode {
-	public string Value { get; }
-
-	private HotkeyCode(string value) => Value = value;
-
-	public override string ToString() => Value;
-
+public static class HotkeyCode {
 	// Mouse buttons
-	public static readonly HotkeyCode PrimaryMouse = new("primarymouse");
-	public static readonly HotkeyCode SecondaryMouse = new("secondarymouse");
-	public static readonly HotkeyCode MiddleMouse = new("middlemouse");
+	public static readonly string PrimaryMouse = "primarymouse";
+	public static readonly string SecondaryMouse = "secondarymouse";
+	public static readonly string MiddleMouse = "middlemouse";
 
 	// Movement
-	public static readonly HotkeyCode WalkForward = new("walkforward");
-	public static readonly HotkeyCode WalkBackward = new("walkbackward");
-	public static readonly HotkeyCode WalkLeft = new("walkleft");
-	public static readonly HotkeyCode WalkRight = new("walkright");
-	public static readonly HotkeyCode Sneak = new("sneak");
-	public static readonly HotkeyCode Sprint = new("sprint");
-	public static readonly HotkeyCode Jump = new("jump");
-	public static readonly HotkeyCode SitDown = new("sitdown");
+	public static readonly string WalkForward = "walkforward";
+	public static readonly string WalkBackward = "walkbackward";
+	public static readonly string WalkLeft = "walkleft";
+	public static readonly string WalkRight = "walkright";
+	public static readonly string Sneak = "sneak";
+	public static readonly string Sprint = "sprint";
+	public static readonly string Jump = "jump";
+	public static readonly string SitDown = "sitdown";
 
 	// Modifiers
-	public static readonly HotkeyCode Shift = new("shift");
-	public static readonly HotkeyCode Ctrl = new("ctrl");
+	public static readonly string Shift = "shift";
+	public static readonly string Ctrl = "ctrl";
 
 	// Inventory / UI
-	public static readonly HotkeyCode InventoryDialog = new("inventorydialog");
-	public static readonly HotkeyCode CharacterDialog = new("characterdialog");
-	public static readonly HotkeyCode DropItem = new("dropitem");
-	public static readonly HotkeyCode DropItems = new("dropitems");
-	public static readonly HotkeyCode ToolModeSelect = new("toolmodeselect");
-	public static readonly HotkeyCode CoordinatesHud = new("coordinateshud");
-	public static readonly HotkeyCode BlockInfoHud = new("blockinfohud");
-	public static readonly HotkeyCode BlockInteractionHelp = new("blockinteractionhelp");
-	public static readonly HotkeyCode EscapeMenuDialog = new("escapemenudialog");
-	public static readonly HotkeyCode ToggleHud = new("togglehud");
+	public static readonly string InventoryDialog = "inventorydialog";
+	public static readonly string CharacterDialog = "characterdialog";
+	public static readonly string DropItem = "dropitem";
+	public static readonly string DropItems = "dropitems";
+	public static readonly string ToolModeSelect = "toolmodeselect";
+	public static readonly string CoordinatesHud = "coordinateshud";
+	public static readonly string BlockInfoHud = "blockinfohud";
+	public static readonly string BlockInteractionHelp = "blockinteractionhelp";
+	public static readonly string EscapeMenuDialog = "escapemenudialog";
+	public static readonly string ToggleHud = "togglehud";
 
 	// Camera
-	public static readonly HotkeyCode CycleCamera = new("cyclecamera");
-	public static readonly HotkeyCode ZoomOut = new("zoomout");
-	public static readonly HotkeyCode ZoomIn = new("zoomin");
-	public static readonly HotkeyCode ToggleMouseControl = new("togglemousecontrol");
+	public static readonly string CycleCamera = "cyclecamera";
+	public static readonly string ZoomOut = "zoomout";
+	public static readonly string ZoomIn = "zoomin";
+	public static readonly string ToggleMouseControl = "togglemousecontrol";
 
 	// Chat / commands
-	public static readonly HotkeyCode BeginChat = new("beginchat");
-	public static readonly HotkeyCode BeginClientCommand = new("beginclientcommand");
-	public static readonly HotkeyCode BeginServerCommand = new("beginservercommand");
-	public static readonly HotkeyCode ChatDialog = new("chatdialog");
-	public static readonly HotkeyCode MacroEditor = new("macroeditor");
+	public static readonly string BeginChat = "beginchat";
+	public static readonly string BeginClientCommand = "beginclientcommand";
+	public static readonly string BeginServerCommand = "beginservercommand";
+	public static readonly string ChatDialog = "chatdialog";
+	public static readonly string MacroEditor = "macroeditor";
 
 	// Display / screenshots
-	public static readonly HotkeyCode ToggleFullscreen = new("togglefullscreen");
-	public static readonly HotkeyCode Screenshot = new("screenshot");
-	public static readonly HotkeyCode MegaScreenshot = new("megascreenshot");
-	public static readonly HotkeyCode FlipHandSlots = new("fliphandslots");
+	public static readonly string ToggleFullscreen = "togglefullscreen";
+	public static readonly string Screenshot = "screenshot";
+	public static readonly string MegaScreenshot = "megascreenshot";
+	public static readonly string FlipHandSlots = "fliphandslots";
 
 	// Hotbar slots
-	public static readonly HotkeyCode HotbarSlot1 = new("hotbarslot1");
-	public static readonly HotkeyCode HotbarSlot2 = new("hotbarslot2");
-	public static readonly HotkeyCode HotbarSlot3 = new("hotbarslot3");
-	public static readonly HotkeyCode HotbarSlot4 = new("hotbarslot4");
-	public static readonly HotkeyCode HotbarSlot5 = new("hotbarslot5");
-	public static readonly HotkeyCode HotbarSlot6 = new("hotbarslot6");
-	public static readonly HotkeyCode HotbarSlot7 = new("hotbarslot7");
-	public static readonly HotkeyCode HotbarSlot8 = new("hotbarslot8");
-	public static readonly HotkeyCode HotbarSlot9 = new("hotbarslot9");
-	public static readonly HotkeyCode HotbarSlot10 = new("hotbarslot10");
+	public static readonly string HotbarSlot1 = "hotbarslot1";
+	public static readonly string HotbarSlot2 = "hotbarslot2";
+	public static readonly string HotbarSlot3 = "hotbarslot3";
+	public static readonly string HotbarSlot4 = "hotbarslot4";
+	public static readonly string HotbarSlot5 = "hotbarslot5";
+	public static readonly string HotbarSlot6 = "hotbarslot6";
+	public static readonly string HotbarSlot7 = "hotbarslot7";
+	public static readonly string HotbarSlot8 = "hotbarslot8";
+	public static readonly string HotbarSlot9 = "hotbarslot9";
+	public static readonly string HotbarSlot10 = "hotbarslot10";
 
 	// Backpack slots
-	public static readonly HotkeyCode BackPackSlot1 = new("hotbarslot11");
-	public static readonly HotkeyCode BackPackSlot2 = new("hotbarslot12");
-	public static readonly HotkeyCode BackPackSlot3 = new("hotbarslot13");
-	public static readonly HotkeyCode BackPackSlot4 = new("hotbarslot14");
+	public static readonly string BackPackSlot1 = "hotbarslot11";
+	public static readonly string BackPackSlot2 = "hotbarslot12";
+	public static readonly string BackPackSlot3 = "hotbarslot13";
+	public static readonly string BackPackSlot4 = "hotbarslot14";
 
 	// Fly / speed
-	public static readonly HotkeyCode DecreaseSpeed = new("decspeed");
-	public static readonly HotkeyCode IncreaseSpeed = new("incspeed");
-	public static readonly HotkeyCode DecreaseSpeedFraction = new("decspeedfrac");
-	public static readonly HotkeyCode IncreaseSpeedFraction = new("incspeedfrac");
-	public static readonly HotkeyCode CycleFlyModes = new("cycleflymodes");
-	public static readonly HotkeyCode Fly = new("fly");
+	public static readonly string DecreaseSpeed = "decspeed";
+	public static readonly string IncreaseSpeed = "incspeed";
+	public static readonly string DecreaseSpeedFraction = "decspeedfrac";
+	public static readonly string IncreaseSpeedFraction = "incspeedfrac";
+	public static readonly string CycleFlyModes = "cycleflymodes";
+	public static readonly string Fly = "fly";
 
 	// Rendering / debug
-	public static readonly HotkeyCode RenderMetaBlocks = new("rendermetablocks");
-	public static readonly HotkeyCode FpsGraph = new("fpsgraph");
-	public static readonly HotkeyCode DebugScreenGraph = new("debugscreenandgraph");
-	public static readonly HotkeyCode ReloadWorld = new("reloadworld");
-	public static readonly HotkeyCode ReloadShaders = new("reloadshaders");
-	public static readonly HotkeyCode ReloadTextures = new("reloadtextures");
-	public static readonly HotkeyCode CompactHeap = new("compactheap");
-	public static readonly HotkeyCode RecomposeAllGuis = new("recomposeallguis");
-	public static readonly HotkeyCode CycleDialogOutlineModes = new("cycledialogoutlines");
-	public static readonly HotkeyCode TickProfiler = new("tickprofiler");
-	public static readonly HotkeyCode PickBlock = new("pickblock");
+	public static readonly string RenderMetaBlocks = "rendermetablocks";
+	public static readonly string FpsGraph = "fpsgraph";
+	public static readonly string DebugScreenGraph = "debugscreenandgraph";
+	public static readonly string ReloadWorld = "reloadworld";
+	public static readonly string ReloadShaders = "reloadshaders";
+	public static readonly string ReloadTextures = "reloadtextures";
+	public static readonly string CompactHeap = "compactheap";
+	public static readonly string RecomposeAllGuis = "recomposeallguis";
+	public static readonly string CycleDialogOutlineModes = "cycledialogoutlines";
+	public static readonly string TickProfiler = "tickprofiler";
+	public static readonly string PickBlock = "pickblock";
 }
