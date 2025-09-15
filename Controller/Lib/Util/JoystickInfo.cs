@@ -3,9 +3,9 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Controller.Lib.Util;
 
-public struct JoystickInfo {
+public class JoystickInfo {
 	public readonly int Id;
-	public string Name;
+	public readonly string Name;
 
 	// Except for rY these seem pretty standard, but
 	// I've decided to keep them as switches just in case.
