@@ -1,92 +1,94 @@
+// ReSharper disable StringLiteralTypo
+
 namespace Controller.Lib;
 
 public static class HotkeyCode {
 	// Mouse buttons
-	public static readonly string PrimaryMouse = "primarymouse";
-	public static readonly string SecondaryMouse = "secondarymouse";
-	public static readonly string MiddleMouse = "middlemouse";
+	public const string PrimaryMouse = "primarymouse";
+	public const string SecondaryMouse = "secondarymouse";
+	public const string MiddleMouse = "middlemouse";
 
 	// Movement
-	public static readonly string WalkForward = "walkforward";
-	public static readonly string WalkBackward = "walkbackward";
-	public static readonly string WalkLeft = "walkleft";
-	public static readonly string WalkRight = "walkright";
-	public static readonly string Sneak = "sneak";
-	public static readonly string Sprint = "sprint";
-	public static readonly string Jump = "jump";
-	public static readonly string SitDown = "sitdown";
+	public const string WalkForward = "walkforward";
+	public const string WalkBackward = "walkbackward";
+	public const string WalkLeft = "walkleft";
+	public const string WalkRight = "walkright";
+	public const string Sneak = "sneak";
+	public const string Sprint = "sprint";
+	public const string Jump = "jump";
+	public const string SitDown = "sitdown";
 
 	// Modifiers
-	public static readonly string Shift = "shift";
-	public static readonly string Ctrl = "ctrl";
+	public const string Shift = "shift";
+	public const string Ctrl = "ctrl";
 
 	// Inventory / UI
-	public static readonly string InventoryDialog = "inventorydialog";
-	public static readonly string CharacterDialog = "characterdialog";
-	public static readonly string DropItem = "dropitem";
-	public static readonly string DropItems = "dropitems";
-	public static readonly string ToolModeSelect = "toolmodeselect";
-	public static readonly string CoordinatesHud = "coordinateshud";
-	public static readonly string BlockInfoHud = "blockinfohud";
-	public static readonly string BlockInteractionHelp = "blockinteractionhelp";
-	public static readonly string EscapeMenuDialog = "escapemenudialog";
-	public static readonly string ToggleHud = "togglehud";
+	public const string InventoryDialog = "inventorydialog";
+	public const string CharacterDialog = "characterdialog";
+	public const string DropItem = "dropitem";
+	public const string DropItems = "dropitems";
+	public const string ToolModeSelect = "toolmodeselect";
+	public const string CoordinatesHud = "coordinateshud";
+	public const string BlockInfoHud = "blockinfohud";
+	public const string BlockInteractionHelp = "blockinteractionhelp";
+	public const string EscapeMenuDialog = "escapemenudialog";
+	public const string ToggleHud = "togglehud";
 
 	// Camera
-	public static readonly string CycleCamera = "cyclecamera";
-	public static readonly string ZoomOut = "zoomout";
-	public static readonly string ZoomIn = "zoomin";
-	public static readonly string ToggleMouseControl = "togglemousecontrol";
+	public const string CycleCamera = "cyclecamera";
+	public const string ZoomOut = "zoomout";
+	public const string ZoomIn = "zoomin";
+	public const string ToggleMouseControl = "togglemousecontrol";
 
 	// Chat / commands
-	public static readonly string BeginChat = "beginchat";
-	public static readonly string BeginClientCommand = "beginclientcommand";
-	public static readonly string BeginServerCommand = "beginservercommand";
-	public static readonly string ChatDialog = "chatdialog";
-	public static readonly string MacroEditor = "macroeditor";
+	public const string BeginChat = "beginchat";
+	public const string BeginClientCommand = "beginclientcommand";
+	public const string BeginServerCommand = "beginservercommand";
+	public const string ChatDialog = "chatdialog";
+	public const string MacroEditor = "macroeditor";
 
 	// Display / screenshots
-	public static readonly string ToggleFullscreen = "togglefullscreen";
-	public static readonly string Screenshot = "screenshot";
-	public static readonly string MegaScreenshot = "megascreenshot";
-	public static readonly string FlipHandSlots = "fliphandslots";
+	public const string ToggleFullscreen = "togglefullscreen";
+	public const string Screenshot = "screenshot";
+	public const string MegaScreenshot = "megascreenshot";
+	public const string FlipHandSlots = "fliphandslots";
 
 	// Hotbar slots
-	public static readonly string HotbarSlot1 = "hotbarslot1";
-	public static readonly string HotbarSlot2 = "hotbarslot2";
-	public static readonly string HotbarSlot3 = "hotbarslot3";
-	public static readonly string HotbarSlot4 = "hotbarslot4";
-	public static readonly string HotbarSlot5 = "hotbarslot5";
-	public static readonly string HotbarSlot6 = "hotbarslot6";
-	public static readonly string HotbarSlot7 = "hotbarslot7";
-	public static readonly string HotbarSlot8 = "hotbarslot8";
-	public static readonly string HotbarSlot9 = "hotbarslot9";
-	public static readonly string HotbarSlot10 = "hotbarslot10";
+	public const string HotbarSlot1 = "hotbarslot1";
+	public const string HotbarSlot2 = "hotbarslot2";
+	public const string HotbarSlot3 = "hotbarslot3";
+	public const string HotbarSlot4 = "hotbarslot4";
+	public const string HotbarSlot5 = "hotbarslot5";
+	public const string HotbarSlot6 = "hotbarslot6";
+	public const string HotbarSlot7 = "hotbarslot7";
+	public const string HotbarSlot8 = "hotbarslot8";
+	public const string HotbarSlot9 = "hotbarslot9";
+	public const string HotbarSlot10 = "hotbarslot10";
 
 	// Backpack slots
-	public static readonly string BackPackSlot1 = "hotbarslot11";
-	public static readonly string BackPackSlot2 = "hotbarslot12";
-	public static readonly string BackPackSlot3 = "hotbarslot13";
-	public static readonly string BackPackSlot4 = "hotbarslot14";
+	public const string BackPackSlot1 = "hotbarslot11";
+	public const string BackPackSlot2 = "hotbarslot12";
+	public const string BackPackSlot3 = "hotbarslot13";
+	public const string BackPackSlot4 = "hotbarslot14";
 
 	// Fly / speed
-	public static readonly string DecreaseSpeed = "decspeed";
-	public static readonly string IncreaseSpeed = "incspeed";
-	public static readonly string DecreaseSpeedFraction = "decspeedfrac";
-	public static readonly string IncreaseSpeedFraction = "incspeedfrac";
-	public static readonly string CycleFlyModes = "cycleflymodes";
-	public static readonly string Fly = "fly";
+	public const string DecreaseSpeed = "decspeed";
+	public const string IncreaseSpeed = "incspeed";
+	public const string DecreaseSpeedFraction = "decspeedfrac";
+	public const string IncreaseSpeedFraction = "incspeedfrac";
+	public const string CycleFlyModes = "cycleflymodes";
+	public const string Fly = "fly";
 
 	// Rendering / debug
-	public static readonly string RenderMetaBlocks = "rendermetablocks";
-	public static readonly string FpsGraph = "fpsgraph";
-	public static readonly string DebugScreenGraph = "debugscreenandgraph";
-	public static readonly string ReloadWorld = "reloadworld";
-	public static readonly string ReloadShaders = "reloadshaders";
-	public static readonly string ReloadTextures = "reloadtextures";
-	public static readonly string CompactHeap = "compactheap";
-	public static readonly string RecomposeAllGuis = "recomposeallguis";
-	public static readonly string CycleDialogOutlineModes = "cycledialogoutlines";
-	public static readonly string TickProfiler = "tickprofiler";
-	public static readonly string PickBlock = "pickblock";
+	public const string RenderMetaBlocks = "rendermetablocks";
+	public const string FpsGraph = "fpsgraph";
+	public const string DebugScreenGraph = "debugscreenandgraph";
+	public const string ReloadWorld = "reloadworld";
+	public const string ReloadShaders = "reloadshaders";
+	public const string ReloadTextures = "reloadtextures";
+	public const string CompactHeap = "compactheap";
+	public const string RecomposeAllGuis = "recomposeallguis";
+	public const string CycleDialogOutlineModes = "cycledialogoutlines";
+	public const string TickProfiler = "tickprofiler";
+	public const string PickBlock = "pickblock";
 }

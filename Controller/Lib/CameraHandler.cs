@@ -63,12 +63,21 @@ public class CameraHandler {
 
 	private void UpdateBlockTarget(float pitch, float yaw) {
 		IClientPlayer player = capi.World.Player;
-		Vec3d clientCameraPos = player.Entity.Pos.XYZ.Clone().Add(0, player.Entity.LocalEyePos.Y, 0);
-		float reach = player.WorldData.PickingRange;
+		Vec3d clientCameraPos = player.Entity.Pos.XYZ.Clone()
+			.Add(0, player.Entity.LocalEyePos.Y, 0);
+
+		float range = player.WorldData.PickingRange;
 
 		BlockSelection blockSel = null;
 		EntitySelection entSel = null;
-		capi.World.RayTraceForSelection(clientCameraPos, pitch, yaw, reach, ref blockSel, ref entSel);
+		capi.World.RayTraceForSelection(
+			clientCameraPos,
+			pitch,
+			yaw,
+			range,
+			ref blockSel,
+			ref entSel
+		);
 
 		player.Entity.BlockSelection = blockSel;
 		player.Entity.EntitySelection = entSel;

@@ -47,15 +47,15 @@ public class Core : ModSystem {
 
 		State = new State();
 
-		InputHandler input = new(api, State);
+		Controls controls = new(Capi, State);
 
-		Camera = new CameraHandler(api, State);
+		Camera = new CameraHandler(Capi, State);
 
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 
 
 		_tickListenerId = Capi.Event.RegisterGameTickListener(dt => {
-			input.ApplyInputs();
+			controls.ApplyInputs();
 			Camera.ApplyRightStickCamera();
 		}, 0);
 	}

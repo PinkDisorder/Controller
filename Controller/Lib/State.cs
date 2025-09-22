@@ -8,8 +8,8 @@ using Vintagestory.API.Client;
 namespace Controller.Lib;
 
 public sealed class State : IRenderer {
-	private readonly Dictionary<int, ButtonInput> _buttonsByCode = new();
-	private readonly Dictionary<string, ButtonInput> _buttonsByName = new();
+	private readonly Dictionary<int, Button> _buttonsByCode = new();
+	private readonly Dictionary<string, Button> _buttonsByName = new();
 
 	public readonly AnalogStick LeftStick = new(0, 0);
 	public readonly AnalogStick RightStick = new(0, 0);
@@ -25,17 +25,17 @@ public sealed class State : IRenderer {
 	];
 
 	public State() {
-		Register(_knownButtons.Select(s => new ButtonInput(s)).ToArray());
+		Register(_knownButtons.Select(s => new Button(s)).ToArray());
 	}
 
-	private void Register(params ButtonInput[] buttons) {
-		foreach (ButtonInput button in buttons) {
+	private void Register(params Button[] buttons) {
+		foreach (Button button in buttons) {
 			_buttonsByName.Add(button.Name, button);
 			_buttonsByCode.Add(button.Code, button);
 		}
 	}
 
-	public ButtonInput Get(string name) {
+	public Button Get(string name) {
 		return _buttonsByName[name];
 	}
 
@@ -58,22 +58,33 @@ public sealed class State : IRenderer {
 		ReadOnlySpan<float> axes = GLFW.GetJoystickAxes(JoystickInfo.Id);
 		if (axes.IsEmpty) return;
 
-		ReadOnlySpan<JoystickInputAction> buttons = GLFW.GetJoystickButtons(JoystickInfo.Id);
+		ReadOnlySpan<JoystickInputAction> buttons =
+			GLFW.GetJoystickButtons(JoystickInfo.Id);
 
-		for (int buttonCode = 0; buttonCode < buttons.Length; buttonCode++) {
+		for (int code = 0; code < buttons.Length; code++) {
 			// immediately exit if we're not tracking this button.
-			if (!_buttonsByCode.TryGetValue(buttonCode, out ButtonInput button)) return;
-			switch (buttons[buttonCode]) {
+			if (!_buttonsByCode.TryGetValue(code, out Button button)) return;
+			switch (buttons[code]) {
 				case JoystickInputAction.Press:
-					button.OnPress(deltaTime);
+					button.RegisterPress(deltaTime);
 					break;
 				case JoystickInputAction.Release when button.IsActive:
-					button.OnRelease();
+					button.RegisterRelease();
 					break;
 			}
 		}
 
-		LeftStick.Update(JoystickInfo.LeftAxisX, JoystickInfo.LeftAxisY, axes);
-		RightStick.Update(JoystickInfo.RightAxisX, JoystickInfo.RightAxisY, axes, invertY: true);
+		LeftStick.Update(
+			JoystickInfo.LeftAxisX,
+			JoystickInfo.LeftAxisY,
+			axes
+		);
+
+		RightStick.Update(
+			JoystickInfo.RightAxisX,
+			JoystickInfo.RightAxisY,
+			axes,
+			invertY: true
+		);
 	}
 }

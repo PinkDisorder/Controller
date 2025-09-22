@@ -2,7 +2,7 @@ namespace Controller.Lib;
 
 public class ConfigData {
 	public string ControllerType = "PS5";
-	
+
 	/**
 	 * Treat this like a percentage. 1.00f would be 100%.
 	 * 0.15f or 15% is a good catch-all. Older controllers
@@ -11,8 +11,8 @@ public class ConfigData {
 	 * Even if your controller is brand new, I suggest
 	 * keeping the deadzone to at least around 0.10f.
 	 */
-	public float Deadzone = 0.15f; 
-	
+	public float Deadzone = 0.15f;
+
 	/**
 	 * This is the percentage of stick movement that
 	 * should be considered noise and ignored.

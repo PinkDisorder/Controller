@@ -7,7 +7,12 @@ public class AnalogStick(float x, float y) {
 
 	public float Y { get; private set; } = y;
 
-	public void Update(int xAxis, int yAxis, ReadOnlySpan<float> axes, bool invertY = false) {
+	public void Update(
+		int xAxis,
+		int yAxis,
+		ReadOnlySpan<float> axes,
+		bool invertY = false
+	) {
 		if (axes.Length <= Math.Max(xAxis, yAxis)) return;
 
 		float x = Math.Abs(axes[xAxis]) < Core.Config.Deadzone ? 0f : axes[xAxis];

@@ -3,7 +3,7 @@ using Controller.Enums;
 
 namespace Controller.Lib.Util;
 
-public class ButtonInput(string name) {
+public class Button(string name) {
 	public readonly int Code = Core.Config.ControllerType switch {
 		"PS5" => (int)Enum.Parse<DualSense>(name, true),
 		"XBOX" => (int)Enum.Parse<Xbox>(name, true),
@@ -27,7 +27,7 @@ public class ButtonInput(string name) {
 	public bool IsActive => _deltaTime > 0;
 	public bool IsReleased { get; private set; }
 
-	public void OnPress(float deltaTime) {
+	public void RegisterPress(float deltaTime) {
 		// Reset per-frame transient flags
 		IsPressed = false;
 		IsHeldRepeat = false;
@@ -55,7 +55,7 @@ public class ButtonInput(string name) {
 		_longPressTriggered = true;
 	}
 
-	public void OnRelease() {
+	public void RegisterRelease() {
 		_deltaTime = 0;
 		_nextRepeat = 0;
 		_longPressTriggered = false;
