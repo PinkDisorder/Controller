@@ -3,70 +3,85 @@ using JetBrains.Annotations;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Controller.Lib;
-using Controller.Lib.Util;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Controller;
 
 [UsedImplicitly(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
 public class Core : ModSystem {
-	private static ILogger Logger { get; set; }
+
+	[UsedImplicitly(ImplicitUseKindFlags.Access)]
+	public static string ModId { get; private set; }
 
 	public static ConfigData Config { get; private set; }
 
-	[UsedImplicitly] public static string ModId { get; private set; }
-	private static ICoreClientAPI Capi { get; set; }
+	private ICoreClientAPI Capi { get; set; }
 
-	private static Lib.State State { get; set; }
-
-	private static CameraHandler Camera { get; set; }
+	private State State { get; set; }
+	private Controls Controls { get; set; }
+	private CameraHandler Camera { get; set; }
 
 	private static long _tickListenerId;
 
+	public static ILogger Logger { get; set; }
+
 	public override void StartPre(ICoreAPI api) {
+		ModId  = Mod.Info.ModID;
 		Logger = Mod.Logger;
-		ModId = Mod.Info.ModID;
+
 		try {
 			var cfg = api.LoadModConfig<ConfigData>($"{Mod.Info.ModID}.json");
+
 			if (cfg != null) {
 				Config = cfg;
-			} else {
-				Mod.Logger.Warning("Config file could not be loaded, attempting to create it.");
+			}
+			else {
+				Mod.Logger.Warning("Config file not found, attempting to create it.");
 				Config = new ConfigData();
 				api.StoreModConfig(Config, "controller.json");
 			}
-		} catch (Exception e) {
-			Mod.Logger.Error("Could neither load nor create config! Loading default settings.");
+		}
+		catch (Exception e) {
+			Mod.Logger.Error("Couldn't create config! Loading default settings.");
 			Mod.Logger.Error(e);
 			Config = new ConfigData();
 		}
 	}
 
 	public override void StartClientSide(ICoreClientAPI api) {
-		Capi = api;
 		base.StartClientSide(api);
+		Capi = api;
 
-		State = new State();
+		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:controller/config/gamecontrollerdb.txt").ToText());
 
-		Controls controls = new(Capi, State);
+		State    = new State(api);
+		Controls = new Controls(Capi, State);
 
 		Camera = new CameraHandler(Capi, State);
 
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 
 
-		_tickListenerId = Capi.Event.RegisterGameTickListener(dt => {
-			controls.ApplyInputs();
-			Camera.ApplyRightStickCamera();
-		}, 0);
+		_tickListenerId = Capi.Event.RegisterGameTickListener(
+			dt => {
+				Controls.ApplyInputs();
+				Camera.ApplyRightStickCamera();
+			}
+			, 0
+		);
 	}
 
 	public override void Dispose() {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
 		Capi.Event.UnregisterRenderer(State, EnumRenderStage.Before);
-		Camera = null;
-
-		Config = null;
-		Capi = null;
+		Controls.Dispose();
+		State.Dispose();
+		State    = null;
+		Controls = null;
+		Camera   = null;
+		Config   = null;
+		Capi     = null;
 		base.Dispose();
 	}
+
 }
