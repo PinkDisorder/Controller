@@ -3,18 +3,10 @@ using Controller.Enums;
 
 namespace Controller.Lib.Util;
 
-public class Button(string name) {
-	public readonly int Code = Core.Config.ControllerType switch {
-		"PS5" => (int)Enum.Parse<DualSense>(name, true),
-		"XBOX" => (int)Enum.Parse<Xbox>(name, true),
-		"SWITCH" => (int)Enum.Parse<Switch>(name, true),
-		_ => -1
-	};
+public class Button() {
 
-	public readonly string Name = name;
-
-	private const float HeldThreshold = 0.5f; // for repeat
-	private const float RepeatInterval = 0.2f; // for repeat
+	private const float HeldThreshold = 0.5f;      // for repeat
+	private const float RepeatInterval = 0.2f;     // for repeat
 	private const float LongPressThreshold = 1.0f; // for long press (example)
 
 	private float _deltaTime;
@@ -27,18 +19,27 @@ public class Button(string name) {
 	public bool IsActive => _deltaTime > 0;
 	public bool IsReleased { get; private set; }
 
+	#nullable enable
+	public event Action? OnPress;
+	public event Action? OnHeldRepeat;
+	public event Action? OnLongPress;
+	public event Action? OnRelease;
+	#nullable disable
+
 	public void RegisterPress(float deltaTime) {
 		// Reset per-frame transient flags
-		IsPressed = false;
-		IsHeldRepeat = false;
+		IsPressed     = false;
+		IsHeldRepeat  = false;
 		IsLongPressed = false;
-		IsReleased = false;
+		IsReleased    = false;
 
 		if (_deltaTime == 0) {
 			// fresh press
-			_nextRepeat = HeldThreshold;
+			_nextRepeat         = HeldThreshold;
 			_longPressTriggered = false;
-			IsPressed = true;
+			IsPressed           = true;
+
+			OnPress?.Invoke();
 		}
 
 		_deltaTime += deltaTime;
@@ -46,23 +47,29 @@ public class Button(string name) {
 		// repeat logic
 		if (_deltaTime >= _nextRepeat) {
 			IsHeldRepeat = true;
+			OnHeldRepeat?.Invoke();
 			_nextRepeat += RepeatInterval;
 		}
 
 		// long press logic
 		if (!(_deltaTime >= LongPressThreshold) || _longPressTriggered) return;
 		IsLongPressed = true;
+		OnLongPress?.Invoke();
+
 		_longPressTriggered = true;
 	}
 
 	public void RegisterRelease() {
-		_deltaTime = 0;
-		_nextRepeat = 0;
+		_deltaTime          = 0;
+		_nextRepeat         = 0;
 		_longPressTriggered = false;
 
-		IsPressed = false;
-		IsHeldRepeat = false;
+		IsPressed     = false;
+		IsHeldRepeat  = false;
 		IsLongPressed = false;
-		IsReleased = true;
+		IsReleased    = true;
+
+		OnRelease?.Invoke();
 	}
+
 }
