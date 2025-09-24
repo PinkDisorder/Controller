@@ -52,7 +52,7 @@ public class Core : ModSystem {
 		base.StartClientSide(api);
 		Capi = api;
 
-		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:controller/config/gamecontrollerdb.txt").ToText());
+		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText());
 
 		State    = new State(api);
 		Controls = new Controls(Capi, State);
