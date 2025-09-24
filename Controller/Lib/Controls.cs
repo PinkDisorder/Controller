@@ -1,50 +1,82 @@
-using Controller.Enums;
-using Controller.Lib.Util;
 using Vintagestory.API.Client;
-using Vintagestory.API.Common;
 
 namespace Controller.Lib;
 
-public class Controls(ICoreClientAPI api, State state) {
+public class Controls {
+	private readonly ICoreClientAPI Api;
+	private readonly State State;
+	private void ToggleInventory() => TriggerHotKey(HotkeyCode.InventoryDialog);
+	private void CharacterDialog() => TriggerHotKey(HotkeyCode.CharacterDialog);
+	private void DropItem() => TriggerHotKey(HotkeyCode.DropItem);
+	private void DropItems() => TriggerHotKey(HotkeyCode.DropItems);
+	private void SelectTool() => TriggerHotKey(HotkeyCode.ToolModeSelect);
+	private void EscapeMenuDialog() => TriggerHotKey(HotkeyCode.EscapeMenuDialog);
+	private void ChatDialog() => TriggerHotKey(HotkeyCode.ChatDialog);
+	private void FlipHandSlots() => TriggerHotKey(HotkeyCode.FlipHandSlots);
+	private void PrimaryMouse() => TriggerHotKey(HotkeyCode.PrimaryMouse);
+	private void SecondaryMouse() => TriggerHotKey(HotkeyCode.SecondaryMouse);
+
 	private void TriggerHotKey(string hotkeyCode) {
-		HotKey key = api.Input.GetHotKeyByCode(hotkeyCode);
+		if (Api.World.Player?.Entity == null) return;
+		HotKey key = Api.Input.GetHotKeyByCode(hotkeyCode);
 		key.Handler(key.CurrentMapping);
 	}
 
-	// Call me every tick
+	public Controls(ICoreClientAPI api, State state) {
+		Api   = api;
+		State = state;
+
+		var c = Core.Config;
+		State.GetButton(c.Inventory).OnPress      += ToggleInventory;
+		State.GetButton(c.SwitchHands).OnPress    += FlipHandSlots;
+		State.GetButton(c.SelectTool).OnPress     += SelectTool;
+		State.GetButton(c.CharacterPanel).OnPress += CharacterDialog;
+		State.GetButton(c.DropItem).OnPress       += DropItem;
+		State.GetButton(c.DropItem).OnLongPress   += DropItems;
+		State.GetButton(c.Menu).OnPress           += EscapeMenuDialog;
+		State.GetButton(c.Chat).OnPress           += ChatDialog;
+		State.GetButton(c.LeftClick).OnPress      += PrimaryMouse;
+		State.GetButton(c.RightClick).OnPress     += SecondaryMouse;
+	}
+
+	/// <summary>
+	/// Reserved for checking boolean inputs.
+	/// </summary>
 	public void ApplyInputs() {
-		EntityPlayer player = api.World.Player?.Entity;
+		var player = Api.World.Player?.Entity;
 		if (player == null) return;
-		if (state.JoystickInfo.Id < 0) return;
 
-		player.Controls.Jump = state.Get(Core.Config.Jump).IsActive;
-		player.Controls.Sprint = state.Get(Core.Config.Sprint).IsActive;
-		player.Controls.Sneak = state.Get(Core.Config.Sneak).IsActive;
+		var c = Core.Config;
+		player.Controls.Forward  = State.LeftStick.Y < -c.Deadzone;
+		player.Controls.Backward = State.LeftStick.Y > c.Deadzone;
+		player.Controls.Left     = State.LeftStick.X < -c.Deadzone;
+		player.Controls.Right    = State.LeftStick.X > c.Deadzone;
+		player.Controls.Jump     = State.GetButton(c.Jump).IsActive;
+		player.Controls.Sprint   = State.GetButton(c.Sprint).IsActive;
+		player.Controls.Sneak    = State.GetButton(c.Sneak).IsActive;
+	}
 
-		Button inv = state.Get(Core.Config.OpenInventory);
-		if (inv.IsPressed && !inv.IsHeldRepeat) {
-			TriggerHotKey(HotkeyCode.InventoryDialog);
-		}
+	public void Dispose() {
+		var c = Core.Config;
+		State.GetButton(c.Inventory).OnPress      -= ToggleInventory;
+		State.GetButton(c.SwitchHands).OnPress    -= FlipHandSlots;
+		State.GetButton(c.SelectTool).OnPress     -= SelectTool;
+		State.GetButton(c.CharacterPanel).OnPress -= CharacterDialog;
+		State.GetButton(c.DropItem).OnPress       -= DropItem;
+		State.GetButton(c.DropItem).OnLongPress   -= DropItems;
+		State.GetButton(c.Menu).OnPress           -= EscapeMenuDialog;
+		State.GetButton(c.Chat).OnPress           -= ChatDialog;
+		State.GetButton(c.LeftClick).OnPress      -= PrimaryMouse;
+		State.GetButton(c.RightClick).OnPress     -= SecondaryMouse;
 
-		if (state.Get("Guide").IsPressed)
-			TriggerHotKey(HotkeyCode.BeginChat);
-
-		if (state.Get("DPadUp").IsPressed) {
-			TriggerHotKey(HotkeyCode.ZoomIn);
-		}
-
-		if (state.Get("DPadDown").IsPressed) {
-			TriggerHotKey(HotkeyCode.ZoomOut);
-		}
-
-		if (state.Get("DPadUp").IsLongPressed) {
-			TriggerHotKey(HotkeyCode.CycleCamera);
-		}
-
-
-		player.Controls.Forward = state.LeftStick.Y < -Core.Config.Deadzone;
-		player.Controls.Right = state.LeftStick.X > Core.Config.Deadzone;
-		player.Controls.Backward = state.LeftStick.Y > Core.Config.Deadzone;
-		player.Controls.Left = state.LeftStick.X < -Core.Config.Deadzone;
+		var player = Api.World.Player?.Entity;
+		if (player == null) return;
+		player.Controls.Forward  = false;
+		player.Controls.Right    = false;
+		player.Controls.Backward = false;
+		player.Controls.Left     = false;
+		player.Controls.Jump     = false;
+		player.Controls.Sprint   = false;
+		player.Controls.Sneak    = false;
 	}
 }
