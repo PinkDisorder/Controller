@@ -22,4 +22,7 @@ public class ConfigData {
 	public string Chat = "Guide";
 	public string Map = "Back";
 
+	public float SensitivityYaw = 0.05f;
+	public float SensitivityPitch = 0.1f;
+	
 }
