@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Controller.Lib;
+using HarmonyLib;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Controller;
@@ -54,10 +55,14 @@ public class Core : ModSystem {
 
 		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText());
 
+		var harmony = new Harmony("net.vividvoid.controller");
+		harmony.PatchAll();
+		
 		State    = new State(api);
 		Controls = new Controls(Capi, State);
 
 		Camera = new CameraHandler(Capi, State);
+
 
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 
