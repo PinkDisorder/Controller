@@ -3,17 +3,28 @@ using Vintagestory.API.Client;
 namespace Controller.Lib;
 
 public class Controls {
+
 	private readonly ICoreClientAPI Api;
 	private readonly State State;
+
 	private void ToggleInventory() => TriggerHotKey(HotkeyCode.InventoryDialog);
+
 	private void CharacterDialog() => TriggerHotKey(HotkeyCode.CharacterDialog);
+
 	private void DropItem() => TriggerHotKey(HotkeyCode.DropItem);
+
 	private void DropItems() => TriggerHotKey(HotkeyCode.DropItems);
+
 	private void SelectTool() => TriggerHotKey(HotkeyCode.ToolModeSelect);
+
 	private void EscapeMenuDialog() => TriggerHotKey(HotkeyCode.EscapeMenuDialog);
+
 	private void ChatDialog() => TriggerHotKey(HotkeyCode.ChatDialog);
+
 	private void FlipHandSlots() => TriggerHotKey(HotkeyCode.FlipHandSlots);
+
 	private void PrimaryMouse() => TriggerHotKey(HotkeyCode.PrimaryMouse);
+
 	private void SecondaryMouse() => TriggerHotKey(HotkeyCode.SecondaryMouse);
 
 	private void TriggerHotKey(string hotkeyCode) {
@@ -39,9 +50,7 @@ public class Controls {
 		State.GetButton(c.RightClick).OnPress     += SecondaryMouse;
 	}
 
-	/// <summary>
-	/// Reserved for checking boolean inputs.
-	/// </summary>
+	// Reserved for checking boolean inputs.
 	public void ApplyInputs() {
 		var player = Api.World.Player?.Entity;
 		if (player == null) return;
@@ -79,4 +88,5 @@ public class Controls {
 		player.Controls.Sprint   = false;
 		player.Controls.Sneak    = false;
 	}
+
 }

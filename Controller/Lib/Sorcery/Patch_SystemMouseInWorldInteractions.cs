@@ -11,7 +11,11 @@ public static class Patch_SystemMouseInWorldInteractions {
 	public static bool UpdatePicking_Prefix(SystemMouseInWorldInteractions __instance, float dt) {
 		var clientMain = (ClientMain)AccessTools.Field(typeof(SystemMouseInWorldInteractions), "game").GetValue(__instance);
 
-		return !clientMain.MouseGrabbed;
+		if (clientMain != null) {
+			return !clientMain.MouseGrabbed;
+		}
+
+		return false;
 	}
 
 }

@@ -5,7 +5,7 @@ using Vintagestory.API.Client;
 using Vintagestory.Client.NoObf;
 
 #nullable enable
-namespace Controller.Lib.Util;
+namespace Controller.Lib.Sorcery;
 
 internal sealed class WindowWrapper {
 
