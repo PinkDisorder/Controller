@@ -9,8 +9,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Reference Include="OpenTK.Windowing.Desktop">
+            <HintPath>$(VINTAGE_STORY)/Lib/OpenTK.Windowing.Desktop.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
         <Reference Include="OpenTK.Windowing.GraphicsLibraryFramework">
             <HintPath>$(VINTAGE_STORY)/Lib/OpenTK.Windowing.GraphicsLibraryFramework.dll</HintPath>
+            <Private>False</Private>
         </Reference>
         <Reference Include="VintagestoryAPI">
             <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
