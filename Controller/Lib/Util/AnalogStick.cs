@@ -2,13 +2,13 @@ using System;
 
 namespace Controller.Lib.Util;
 
-public class AnalogStick(int xAxis, int yAxis, float x, float y) {
-
-	public float X { get; private set; } = x;
-
-	public float Y { get; private set; } = y;
+public class AnalogStick(int xAxis, int yAxis) {
 
 	private const float NoiseThreshold = 0.02f;
+
+	public float X { get; private set; }
+
+	public float Y { get; private set; }
 
 	public void Update(ReadOnlySpan<float> axes, bool invertY = false) {
 		if (axes.Length <= Math.Max(xAxis, yAxis)) return;
