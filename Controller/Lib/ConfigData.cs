@@ -25,4 +25,6 @@ public class ConfigData {
 	public float SensitivityYaw = 0.05f;
 	public float SensitivityPitch = 0.1f;
 	
+	public float TriggerDeadzone = 0.3f;
+	
 }
