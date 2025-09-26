@@ -1,5 +1,4 @@
 using System;
-using Controller.Enums;
 
 namespace Controller.Lib.Util;
 
@@ -19,12 +18,10 @@ public class Button() {
 	public bool IsActive => _deltaTime > 0;
 	public bool IsReleased { get; private set; }
 
-	#nullable enable
 	public event Action? OnPress;
 	public event Action? OnHeldRepeat;
 	public event Action? OnLongPress;
 	public event Action? OnRelease;
-	#nullable disable
 
 	public void RegisterPress(float deltaTime) {
 		// Reset per-frame transient flags

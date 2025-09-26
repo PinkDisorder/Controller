@@ -5,7 +5,6 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Common;
 using Vintagestory.API.Client;
 using Controller.Lib.Sorcery;
-using Controller.Lib.Util;
 
 namespace Controller.Lib;
 
