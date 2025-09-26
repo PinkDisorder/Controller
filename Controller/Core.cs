@@ -57,18 +57,15 @@ public class Core : ModSystem {
 
 		var harmony = new Harmony("net.vividvoid.controller");
 		harmony.PatchAll();
-		
-		State    = new State(api);
+
+		State    = new State();
 		Controls = new Controls(Capi, State);
-
-		Camera = new CameraHandler(Capi, State);
-
+		Camera   = new CameraHandler(Capi, State);
 
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 
-
 		_tickListenerId = Capi.Event.RegisterGameTickListener(
-			dt => {
+			_ => {
 				Controls.ApplyInputs();
 				Camera.ApplyRightStickCamera();
 			}
