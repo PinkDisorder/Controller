@@ -1,5 +1,4 @@
-using System;
-using Controller.Enums;
+using System.Collections.Generic;
 
 namespace Controller.Lib;
 
@@ -8,6 +7,21 @@ public class ConfigData {
 	public float Deadzone = 0.15f;
 
 	// keybinds
+	public Dictionary<string, string> Keybinds = new() {
+		{ "Jump", "A" }
+		, { "SwitchHands", "B" }
+		, { "SelectTool", "X" }
+		, { "Inventory", "Y" }
+		, { "DropItem", "DPadUp" }
+		, { "CharacterPanel", "DPadDown" }
+		, { "LeftClick", "RightTrigger" }
+		, { "RightClick", "RightBumper" }
+		, { "Sprint", "LeftThumb" }
+		, { "Sneak", "RightThumb" }
+		, { "Menu", "Start" }
+		, { "Chat", "Guide" }
+		, { "Map", "Back" }
+	};
 	public string Jump = "A";
 	public string SwitchHands = "B";
 	public string SelectTool = "X";
@@ -24,7 +38,7 @@ public class ConfigData {
 
 	public float SensitivityYaw = 0.05f;
 	public float SensitivityPitch = 0.1f;
-	
+
 	public float TriggerDeadzone = 0.3f;
-	
+
 }
