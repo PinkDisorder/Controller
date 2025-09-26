@@ -1,43 +1,59 @@
-using Controller.Lib.Util;
-using Controller.Enums;
-using JetBrains.Annotations;
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vintagestory.API.Client;
+using Controller.Enums;
+using Controller.Lib.Util;
 
 namespace Controller.Lib;
 
-using System;
-using System.Collections.Generic;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-
 public class State : IRenderer {
 
-	private readonly Dictionary<GamepadButton, Button> _buttons = new();
+	private readonly static GamepadButton[] ButtonCodes = (GamepadButton[])Enum.GetValues(typeof(GamepadButton));
 
-	private readonly Dictionary<GamepadAxis, Button> _triggers = new() {
-		{ GamepadAxis.LeftTrigger, new Button() }, { GamepadAxis.RightTrigger, new Button() }
+	private readonly Dictionary<GamepadButton, Button> Buttons = ButtonCodes.ToDictionary(btn => btn, _ => new Button());
+
+	private readonly Dictionary<string, GamepadButton> GamepadButtonMap = ButtonCodes.ToDictionary(
+		btn => btn.ToString()
+		, btn => btn
+		, StringComparer.OrdinalIgnoreCase
+	);
+
+	private readonly Dictionary<GamepadAxis, Button> Triggers = new() {
+		{ GamepadAxis.LeftTrigger, new Button() }
+		, { GamepadAxis.RightTrigger, new Button() }
 	};
 
-	public AnalogStick LeftStick { get; }
-	public AnalogStick RightStick { get; }
+	private readonly string ButtonNames = string.Join(", ", Enum.GetNames(typeof(GamepadButton)));
 
-	private readonly JoystickInfo j = new();
+	public readonly AnalogStick LeftStick = new((int)GamepadAxis.LeftX, (int)GamepadAxis.LeftY);
+	public readonly AnalogStick RightStick = new((int)GamepadAxis.RightX, (int)GamepadAxis.RightY);
 
-	public State(ICoreClientAPI api) {
-		foreach (GamepadButton btn in Enum.GetValues(typeof(GamepadButton))) {
-			_buttons[btn] = new Button();
+	private readonly JoystickInfo _joystickInfo = new();
+
+	public Button GetButton(string name) {
+		string err = $"Received user defined keybind {name}. This key is unknown. Possible keys: {ButtonNames}.";
+
+		switch (name) {
+			case "LeftTrigger":
+				return Triggers[GamepadAxis.LeftTrigger];
+			case "RightTrigger":
+				return Triggers[GamepadAxis.RightTrigger];
+			default:
+				return GamepadButtonMap.TryGetValue(name, out GamepadButton key)
+					? Buttons[key]
+					: throw new KeyNotFoundException(err);
 		}
-
-		LeftStick  = new AnalogStick((int)GamepadAxis.LeftX, (int)GamepadAxis.LeftY, 0, 0);
-		RightStick = new AnalogStick((int)GamepadAxis.RightX, (int)GamepadAxis.RightY, 0, 0);
 	}
 
 	public unsafe void OnRenderFrame(float deltaTime, EnumRenderStage stage) {
-		if (j.Id < 0) return;
-		if (!GLFW.JoystickPresent(j.Id)) return;
+		// Early exit if we have no joystick or can't read it.
+		if (_joystickInfo.Id < 0) return;
+		if (!GLFW.JoystickPresent(_joystickInfo.Id)) return;
+		if (!GLFW.GetGamepadState(_joystickInfo.Id, out var gamepadState)) return;
 
-		if (!GLFW.GetGamepadState(j.Id, out var gamepadState)) return;
-
-		foreach ((GamepadButton btn, Button button) in _buttons) {
+		foreach ((GamepadButton btn, Button button) in Buttons) {
 			byte state = gamepadState.Buttons[(int)btn];
 
 			switch ((InputAction)state) {
@@ -49,6 +65,9 @@ public class State : IRenderer {
 					break;
 				case InputAction.Repeat:
 					button.RegisterPress(deltaTime);
+					break;
+				default:
+					Core.Logger.Warning("Unknown GLFW button state?: Unhandled InputAction: " + state);
 					break;
 			}
 		}
@@ -63,45 +82,21 @@ public class State : IRenderer {
 		float leftTrigger  = axes[(int)GamepadAxis.LeftTrigger];
 		float rightTrigger = axes[(int)GamepadAxis.RightTrigger];
 
-		UpdateTriggerButton(_triggers[GamepadAxis.LeftTrigger], leftTrigger, deltaTime);
-		UpdateTriggerButton(_triggers[GamepadAxis.RightTrigger], rightTrigger, deltaTime);
-	}
 
-	private void UpdateTriggerButton(Button button, float value, float deltaTime, float threshold = 0.3f) {
-		if (value > threshold) {
-			button.RegisterPress(deltaTime);
+		if (leftTrigger > Core.Config.TriggerDeadzone) {
+			Triggers[GamepadAxis.LeftTrigger].RegisterPress(deltaTime);
 		}
-		else {
-			if (button.IsActive) {
-				button.RegisterRelease();
-			}
-		}
-	}
-
-	public Button GetButton(GamepadButton btn) => _buttons[btn];
-
-	[CanBeNull]
-	public Button GetButton(string name) {
-		if (name == "LeftTrigger") {
-			return _triggers[GamepadAxis.LeftTrigger];
+		else if (leftTrigger < Core.Config.TriggerDeadzone && Triggers[GamepadAxis.LeftTrigger].IsActive) {
+			Triggers[GamepadAxis.LeftTrigger].RegisterRelease();
 		}
 
-		if (name == "RightTrigger") {
-			return _triggers[GamepadAxis.RightTrigger];
+
+		if (rightTrigger > Core.Config.TriggerDeadzone) {
+			Triggers[GamepadAxis.RightTrigger].RegisterPress(deltaTime);
 		}
-
-		if (Enum.TryParse<GamepadButton>(name, ignoreCase: true, out var btn)) {
-			if (_buttons.TryGetValue(btn, out var button)) return button;
+		else if (rightTrigger < Core.Config.TriggerDeadzone && Triggers[GamepadAxis.RightTrigger].IsActive) {
+			Triggers[GamepadAxis.RightTrigger].RegisterRelease();
 		}
-
-		var names = new List<string>(Enum.GetNames(typeof(GamepadButton)));
-
-		Core.Logger.Error(
-			$"Received user defined keybind {name} but there's no such known key name. "
-			+ $"Possible key names: {string.Join(", ", Enum.GetNames<GamepadButton>())}."
-		);
-
-		return null;
 	}
 
 	public void Dispose() { }
