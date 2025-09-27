@@ -11,42 +11,25 @@ namespace Controller;
 [UsedImplicitly(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
 public class Core : ModSystem {
 
+	#nullable disable
 	[UsedImplicitly(ImplicitUseKindFlags.Access)]
 	public static string ModId { get; private set; }
-
-	public static ConfigData Config { get; private set; }
+	public static Config Config { get; private set; }
+	public static ILogger Logger { get; private set; }
 
 	private ICoreClientAPI Capi { get; set; }
-
 	private State State { get; set; }
 	private Controls Controls { get; set; }
 	private CameraHandler Camera { get; set; }
 
 	private static long _tickListenerId;
 
-	public static ILogger Logger { get; set; }
+	#nullable restore
 
 	public override void StartPre(ICoreAPI api) {
 		ModId  = Mod.Info.ModID;
 		Logger = Mod.Logger;
-
-		try {
-			var cfg = api.LoadModConfig<ConfigData>($"{Mod.Info.ModID}.json");
-
-			if (cfg != null) {
-				Config = cfg;
-			}
-			else {
-				Mod.Logger.Warning("Config file not found, attempting to create it.");
-				Config = new ConfigData();
-				api.StoreModConfig(Config, "controller.json");
-			}
-		}
-		catch (Exception e) {
-			Mod.Logger.Error("Couldn't create config! Loading default settings.");
-			Mod.Logger.Error(e);
-			Config = new ConfigData();
-		}
+		Config = new Config(api, Mod);
 	}
 
 	public override void StartClientSide(ICoreClientAPI api) {
