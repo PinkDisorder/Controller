@@ -4,16 +4,23 @@ namespace Controller.Lib;
 
 public class ConfigData {
 
-	public float Deadzone = 0.15f;
+	public readonly Dictionary<string, float> Tuning = new() {
+		{ "StickDeadzone", 0.15f }
+		, { "TriggerDeadzone", 0.3f }
+		, { "SensitivityPitch", 0.1f }
+		, { "SensitivityYaw", 0.05f }
+	};
 
-	// keybinds
-	public Dictionary<string, string> Keybinds = new() {
+// keybinds
+	public readonly Dictionary<string, string> Keybinds = new() {
 		{ "Jump", "A" }
 		, { "SwitchHands", "B" }
 		, { "SelectTool", "X" }
 		, { "Inventory", "Y" }
 		, { "DropItem", "DPadUp" }
 		, { "CharacterPanel", "DPadDown" }
+		, { "HotbarLeft", "DPadLeft" }
+		, { "HotbarRight", "DPadRight" }
 		, { "LeftClick", "RightTrigger" }
 		, { "RightClick", "RightBumper" }
 		, { "Sprint", "LeftThumb" }
@@ -22,23 +29,5 @@ public class ConfigData {
 		, { "Chat", "Guide" }
 		, { "Map", "Back" }
 	};
-	public string Jump = "A";
-	public string SwitchHands = "B";
-	public string SelectTool = "X";
-	public string Inventory = "Y";
-	public string DropItem = "DPadUp";
-	public string CharacterPanel = "DPadDown";
-	public string LeftClick = "RightTrigger";
-	public string RightClick = "RightBumper";
-	public string Sprint = "LeftThumb";
-	public string Sneak = "RightThumb";
-	public string Menu = "Start";
-	public string Chat = "Guide";
-	public string Map = "Back";
-
-	public float SensitivityYaw = 0.05f;
-	public float SensitivityPitch = 0.1f;
-
-	public float TriggerDeadzone = 0.3f;
 
 }
