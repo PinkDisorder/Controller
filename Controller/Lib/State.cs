@@ -50,7 +50,6 @@ public class State : IRenderer {
 	public unsafe void OnRenderFrame(float deltaTime, EnumRenderStage stage) {
 		// Early exit if we have no joystick or can't read it.
 		if (_joystickInfo.Id < 0) return;
-		if (!GLFW.JoystickPresent(_joystickInfo.Id)) return;
 		if (!GLFW.GetGamepadState(_joystickInfo.Id, out var gamepadState)) return;
 
 		foreach ((GamepadButton btn, Button button) in Buttons) {
@@ -66,8 +65,10 @@ public class State : IRenderer {
 				case InputAction.Repeat:
 					button.RegisterPress(deltaTime);
 					break;
+				case 0:
+					break;
 				default:
-					Core.Logger.Warning("Unknown GLFW button state?: Unhandled InputAction: " + state);
+					Core.Logger.Warning($"Unknown GLFW button state?: Unhandled InputAction: {state} for button {btn}");
 					break;
 			}
 		}
@@ -82,19 +83,20 @@ public class State : IRenderer {
 		float leftTrigger  = axes[(int)GamepadAxis.LeftTrigger];
 		float rightTrigger = axes[(int)GamepadAxis.RightTrigger];
 
-
-		if (leftTrigger > Core.Config.TriggerDeadzone) {
+		if (leftTrigger > Core.Config.Data.Tuning["TriggerDeadzone"]) {
 			Triggers[GamepadAxis.LeftTrigger].RegisterPress(deltaTime);
 		}
-		else if (leftTrigger < Core.Config.TriggerDeadzone && Triggers[GamepadAxis.LeftTrigger].IsActive) {
+		else if (leftTrigger < Core.Config.Data.Tuning["TriggerDeadzone"]
+						&& Triggers[GamepadAxis.LeftTrigger].IsActive) {
 			Triggers[GamepadAxis.LeftTrigger].RegisterRelease();
 		}
 
 
-		if (rightTrigger > Core.Config.TriggerDeadzone) {
+		if (rightTrigger > Core.Config.Data.Tuning["TriggerDeadzone"]) {
 			Triggers[GamepadAxis.RightTrigger].RegisterPress(deltaTime);
 		}
-		else if (rightTrigger < Core.Config.TriggerDeadzone && Triggers[GamepadAxis.RightTrigger].IsActive) {
+		else if (rightTrigger < Core.Config.Data.Tuning["TriggerDeadzone"]
+						&& Triggers[GamepadAxis.RightTrigger].IsActive) {
 			Triggers[GamepadAxis.RightTrigger].RegisterRelease();
 		}
 	}

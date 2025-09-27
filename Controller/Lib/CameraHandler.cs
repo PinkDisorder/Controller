@@ -10,12 +10,13 @@ namespace Controller.Lib;
 
 public class CameraHandler(ICoreClientAPI api, State state) {
 
+	// ReSharper disable once InconsistentNaming
 	private readonly NativeWindow Window = new WindowWrapper(api).Native;
 
 	private const float PitchClampMin = (float)(Math.PI / 2);
 	private const float PitchClampMax = (float)((Math.PI * 13) / 9);
 
-	private IClientPlayer Player => api.World.Player;
+	private IClientPlayer? Player => api.World.Player;
 
 	private float? _accumulatedPitch = api.World.Player?.CameraPitch;
 
@@ -30,12 +31,16 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 		// pitch is vertical
 		float pitch = (_accumulatedPitch ??= Player.CameraPitch);
 
-		if (Math.Abs(state.RightStick.X) > Core.Config.Deadzone) {
-			yaw = GameMath.Mod(yaw - state.RightStick.X * Core.Config.SensitivityYaw, GameMath.TWOPI);
+		if (Math.Abs(state.RightStick.X) > Core.Config.Data.Tuning["StickDeadzone"]) {
+			yaw = GameMath.Mod(yaw - state.RightStick.X * Core.Config.Data.Tuning["SensitivityYaw"], GameMath.TWOPI);
 		}
 
-		if (Math.Abs(state.RightStick.Y) > Core.Config.Deadzone) {
-			pitch = Math.Clamp(pitch - state.RightStick.Y * Core.Config.SensitivityPitch, PitchClampMin, PitchClampMax);
+		if (Math.Abs(state.RightStick.Y) > Core.Config.Data.Tuning["StickDeadzone"]) {
+			pitch = Math.Clamp(
+				pitch - state.RightStick.Y * Core.Config.Data.Tuning["SensitivityPitch"]
+				, PitchClampMin
+				, PitchClampMax
+			);
 
 			_accumulatedPitch = pitch;
 		}
@@ -50,8 +55,8 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 
 		float range = Player.WorldData.PickingRange;
 
-		BlockSelection  blockSel = null;
-		EntitySelection entSel   = null;
+		BlockSelection?  blockSel = null;
+		EntitySelection? entSel   = null;
 
 		api.World.RayTraceForSelection(
 			clientCameraPos

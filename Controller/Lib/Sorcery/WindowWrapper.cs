@@ -12,10 +12,10 @@ internal sealed class WindowWrapper {
 
 	public NativeWindow Native => _window;
 
-	private const BindingFlags _flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public;
+	private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public;
 
 	public WindowWrapper(ICoreClientAPI clientApi) {
-		FieldInfo? field = typeof(ClientMain).GetField("Platform", _flags);
+		FieldInfo? field = typeof(ClientMain).GetField("Platform", Flags);
 
 		ClientPlatformWindows? platform = (ClientPlatformWindows?)field?.GetValue(clientApi.World as ClientMain);
 
