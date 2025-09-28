@@ -83,21 +83,23 @@ public class State : IRenderer {
 		float leftTrigger  = axes[(int)GamepadAxis.LeftTrigger];
 		float rightTrigger = axes[(int)GamepadAxis.RightTrigger];
 
-		if (leftTrigger > Core.Config.Data.Tuning["TriggerDeadzone"]) {
-			Triggers[GamepadAxis.LeftTrigger].RegisterPress(deltaTime);
+		Button ltb = Triggers[GamepadAxis.LeftTrigger];
+		Button rtb = Triggers[GamepadAxis.RightTrigger];
+
+		float tdz = Core.Config.Tuning["TriggerDeadzone"];
+
+		if (leftTrigger > tdz) {
+			ltb.RegisterPress(deltaTime);
 		}
-		else if (leftTrigger < Core.Config.Data.Tuning["TriggerDeadzone"]
-						&& Triggers[GamepadAxis.LeftTrigger].IsActive) {
-			Triggers[GamepadAxis.LeftTrigger].RegisterRelease();
+		else if (leftTrigger < tdz && ltb.IsActive) {
+			ltb.RegisterRelease();
 		}
 
-
-		if (rightTrigger > Core.Config.Data.Tuning["TriggerDeadzone"]) {
-			Triggers[GamepadAxis.RightTrigger].RegisterPress(deltaTime);
+		if (rightTrigger > tdz) {
+			rtb.RegisterPress(deltaTime);
 		}
-		else if (rightTrigger < Core.Config.Data.Tuning["TriggerDeadzone"]
-						&& Triggers[GamepadAxis.RightTrigger].IsActive) {
-			Triggers[GamepadAxis.RightTrigger].RegisterRelease();
+		else if (rightTrigger < tdz && rtb.IsActive) {
+			rtb.RegisterRelease();
 		}
 	}
 

@@ -13,8 +13,8 @@ public class AnalogStick(int xAxis, int yAxis) {
 	public void Update(ReadOnlySpan<float> axes, bool invertY = false) {
 		if (axes.Length <= Math.Max(xAxis, yAxis)) return;
 
-		float x = Math.Abs(axes[xAxis]) < Core.Config.Data.Tuning["StickDeadzone"] ? 0f : axes[xAxis];
-		float y = Math.Abs(axes[yAxis]) < Core.Config.Data.Tuning["StickDeadzone"] ? 0f : axes[yAxis];
+		float x = Math.Abs(axes[xAxis]) < Core.Config.Tuning["StickDeadzone"] ? 0f : axes[xAxis];
+		float y = Math.Abs(axes[yAxis]) < Core.Config.Tuning["StickDeadzone"] ? 0f : axes[yAxis];
 
 		bool xDidMove = Math.Abs(X - x) > NoiseThreshold;
 		bool yDidMove = Math.Abs(Y - y) > NoiseThreshold;

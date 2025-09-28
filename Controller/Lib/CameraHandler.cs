@@ -31,13 +31,13 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 		// pitch is vertical
 		float pitch = (_accumulatedPitch ??= Player.CameraPitch);
 
-		if (Math.Abs(state.RightStick.X) > Core.Config.Data.Tuning["StickDeadzone"]) {
-			yaw = GameMath.Mod(yaw - state.RightStick.X * Core.Config.Data.Tuning["SensitivityYaw"], GameMath.TWOPI);
+		if (Math.Abs(state.RightStick.X) > Core.Config.Tuning["StickDeadzone"]) {
+			yaw = GameMath.Mod(yaw - state.RightStick.X * Core.Config.Tuning["SensitivityYaw"], GameMath.TWOPI);
 		}
 
-		if (Math.Abs(state.RightStick.Y) > Core.Config.Data.Tuning["StickDeadzone"]) {
+		if (Math.Abs(state.RightStick.Y) > Core.Config.Tuning["StickDeadzone"]) {
 			pitch = Math.Clamp(
-				pitch - state.RightStick.Y * Core.Config.Data.Tuning["SensitivityPitch"]
+				pitch - state.RightStick.Y * Core.Config.Tuning["SensitivityPitch"]
 				, PitchClampMin
 				, PitchClampMax
 			);
@@ -58,14 +58,7 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 		BlockSelection?  blockSel = null;
 		EntitySelection? entSel   = null;
 
-		api.World.RayTraceForSelection(
-			clientCameraPos
-			, pitch
-			, yaw
-			, range
-			, ref blockSel
-			, ref entSel
-		);
+		api.World.RayTraceForSelection(clientCameraPos, pitch, yaw, range, ref blockSel, ref entSel);
 
 		Player.Entity.BlockSelection  = blockSel;
 		Player.Entity.EntitySelection = entSel;

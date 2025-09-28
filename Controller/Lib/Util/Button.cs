@@ -2,7 +2,7 @@ using System;
 
 namespace Controller.Lib.Util;
 
-public class Button() {
+public class Button {
 
 	private const float HeldThreshold = 0.5f;      // for repeat
 	private const float RepeatInterval = 0.2f;     // for repeat

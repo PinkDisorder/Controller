@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using Vintagestory.API.Common;
 
 namespace Controller.Lib;
 
 public class Config {
 
-	public ConfigData Data { get; private set; }
+	private readonly ConfigData Data;
+	public Dictionary<string, string> Keybinds => Data.Keybinds;
+	public Dictionary<string, float> Tuning => Data.Tuning;
 
 	private readonly ICoreAPI _api;
 	private readonly Mod _mod;

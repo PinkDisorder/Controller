@@ -1,10 +1,9 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using HarmonyLib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Controller.Lib;
-using HarmonyLib;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Controller;
 
