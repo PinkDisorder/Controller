@@ -13,7 +13,7 @@ public class Controls {
 	public Controls(ICoreClientAPI api, State state) {
 		_api       = api;
 		_state     = state;
-		_callbacks = new EventCallbacks(api, new ReflectedEvents(api));
+		_callbacks = new EventCallbacks(api);
 		RegisterListeners();
 	}
 

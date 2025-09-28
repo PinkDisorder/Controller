@@ -1,10 +1,10 @@
-using Controller.Lib.Util;
+using System.Reflection;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
 namespace Controller.Lib;
 
-public class EventCallbacks(ICoreClientAPI api, ReflectedEvents reflectedEvents) {
+public class EventCallbacks(ICoreClientAPI api) {
 
 	private const int HotbarLength = 10;
 
@@ -18,38 +18,72 @@ public class EventCallbacks(ICoreClientAPI api, ReflectedEvents reflectedEvents)
 		}
 	}
 
+	private static BindingFlags accessFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+
+	private readonly EventInfo? _mouseDownInfo = api.Event.GetType().GetEvent("MouseUp", accessFlags);
+	private readonly EventInfo? _mouseUpInfo = api.Event.GetType().GetEvent("MouseDown", accessFlags);
+
 	private void TriggerHotKey(string hotkeyCode) {
 		if (api.World.Player?.Entity == null) return;
 		HotKey key = api.Input.GetHotKeyByCode(hotkeyCode);
 		key.Handler(key.CurrentMapping);
 	}
 
-	public void ToggleInventory() => TriggerHotKey(HotkeyCode.InventoryDialog);
+	private void OnMouseInput(int x, int y, EnumMouseButton btn, bool dirIsDown) {
+		switch (dirIsDown) {
+			case true when _mouseDownInfo is null: return;
+			case false when _mouseUpInfo is null:  return;
+		}
 
-	public void CharacterDialog() => TriggerHotKey(HotkeyCode.CharacterDialog);
+		EventInfo eventInfo = dirIsDown ? _mouseDownInfo : _mouseUpInfo;
+		if (eventInfo is null) return;
 
-	public void DropItem() => TriggerHotKey(HotkeyCode.DropItem);
+		MouseEventDelegate? del =
+			(MouseEventDelegate?)api.Event.GetType().GetField(eventInfo.Name, accessFlags)?.GetValue(api.Event);
 
-	public void SelectTool() => TriggerHotKey(HotkeyCode.ToolModeSelect);
+		del?.Invoke(new MouseEvent(x, y, btn));
+	}
 
-	public void EscapeMenuDialog() => TriggerHotKey(HotkeyCode.EscapeMenuDialog);
+	public void ToggleInventory() =>
+		TriggerHotKey(HotkeyCode.InventoryDialog);
 
-	public void ChatDialog() => TriggerHotKey(HotkeyCode.ChatDialog);
+	public void CharacterDialog() =>
+		TriggerHotKey(HotkeyCode.CharacterDialog);
 
-	public void FlipHandSlots() => TriggerHotKey(HotkeyCode.FlipHandSlots);
+	public void DropItem() =>
+		TriggerHotKey(HotkeyCode.DropItem);
 
-	public void Jump() => TriggerHotKey(HotkeyCode.Jump);
+	public void SelectTool() =>
+		TriggerHotKey(HotkeyCode.ToolModeSelect);
 
-	public void LeftClickUp() => reflectedEvents.OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, false);
+	public void EscapeMenuDialog() =>
+		TriggerHotKey(HotkeyCode.EscapeMenuDialog);
 
-	public void LeftClickDown() => reflectedEvents.OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, true);
+	public void ChatDialog() =>
+		TriggerHotKey(HotkeyCode.ChatDialog);
 
-	public void RightClickUp() => reflectedEvents.OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, false);
+	public void FlipHandSlots() =>
+		TriggerHotKey(HotkeyCode.FlipHandSlots);
 
-	public void RightClickDown() => reflectedEvents.OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, true);
+	public void Jump() =>
+		TriggerHotKey(HotkeyCode.Jump);
 
-	public void HotbarRight() => ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber + 1) % HotbarLength;
+	public void LeftClickUp() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, false);
 
-	public void HotbarLeft() => ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber - 1 + HotbarLength) % HotbarLength;
+	public void LeftClickDown() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, true);
+
+	public void RightClickUp() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, false);
+
+	public void RightClickDown() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, true);
+
+	public void HotbarRight() =>
+		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber + 1) % HotbarLength;
+
+	public void HotbarLeft() =>
+		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber - 1 + HotbarLength) % HotbarLength;
 
 }
