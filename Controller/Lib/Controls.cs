@@ -1,4 +1,6 @@
+using Controller.Lib.Util;
 using Vintagestory.API.Client;
+using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
@@ -6,69 +8,48 @@ public class Controls {
 
 	private readonly ICoreClientAPI _api;
 	private readonly State _state;
-
-	private const int HotbarLength = 10;
-
-	private void ToggleInventory() => TriggerHotKey(HotkeyCode.InventoryDialog);
-
-	private void CharacterDialog() => TriggerHotKey(HotkeyCode.CharacterDialog);
-
-	private void DropItem() => TriggerHotKey(HotkeyCode.DropItem);
-
-	private void DropItems() => TriggerHotKey(HotkeyCode.DropItems);
-
-	private void SelectTool() => TriggerHotKey(HotkeyCode.ToolModeSelect);
-
-	private void EscapeMenuDialog() => TriggerHotKey(HotkeyCode.EscapeMenuDialog);
-
-	private void ChatDialog() => TriggerHotKey(HotkeyCode.ChatDialog);
-
-	private void FlipHandSlots() => TriggerHotKey(HotkeyCode.FlipHandSlots);
-
-	private void PrimaryMouse() => TriggerHotKey(HotkeyCode.PrimaryMouse);
-
-	private void SecondaryMouse() => TriggerHotKey(HotkeyCode.SecondaryMouse);
-
-	private void TriggerHotKey(string hotkeyCode) {
-		if (_api.World.Player?.Entity == null) return;
-		HotKey key = _api.Input.GetHotKeyByCode(hotkeyCode);
-		key.Handler(key.CurrentMapping);
-	}
-
-	private void HotbarRight() {
-		int a = _api.World.Player.InventoryManager.ActiveHotbarSlotNumber;
-		_api.World.Player.InventoryManager.ActiveHotbarSlotNumber = (a + 1) % HotbarLength;
-	}
-
-	private void HotbarLeft() {
-		int a = _api.World.Player.InventoryManager.ActiveHotbarSlotNumber;
-		_api.World.Player.InventoryManager.ActiveHotbarSlotNumber = (a - 1 + HotbarLength) % HotbarLength;
-	}
+	private readonly EventCallbacks _callbacks;
 
 	public Controls(ICoreClientAPI api, State state) {
-		_api   = api;
-		_state = state;
-
+		_api       = api;
+		_state     = state;
+		_callbacks = new EventCallbacks(api, new ReflectedEvents(api));
 		RegisterListeners();
 	}
 
 	private void RegisterListeners() {
-		var c = Core.Config.Data;
-		_state.GetButton(c.Keybinds["Inventory"]).OnPress      += ToggleInventory;
-		_state.GetButton(c.Keybinds["SwitchHands"]).OnPress    += FlipHandSlots;
-		_state.GetButton(c.Keybinds["SelectTool"]).OnPress     += SelectTool;
-		_state.GetButton(c.Keybinds["CharacterPanel"]).OnPress += CharacterDialog;
-		_state.GetButton(c.Keybinds["DropItem"]).OnPress       += DropItem;
-		_state.GetButton(c.Keybinds["DropItem"]).OnLongPress   += DropItems;
-		_state.GetButton(c.Keybinds["Menu"]).OnPress           += EscapeMenuDialog;
-		_state.GetButton(c.Keybinds["Chat"]).OnPress           += ChatDialog;
-		_state.GetButton(c.Keybinds["LeftClick"]).OnPress      += PrimaryMouse;
-		_state.GetButton(c.Keybinds["RightClick"]).OnPress     += SecondaryMouse;
-		_state.GetButton(c.Keybinds["HotbarLeft"]).OnPress     += HotbarLeft;
-		_state.GetButton(c.Keybinds["HotbarRight"]).OnPress    += HotbarRight;
+		Button inventory      = _state.GetButton(Core.Config.Keybinds["Inventory"]);
+		Button switchHands    = _state.GetButton(Core.Config.Keybinds["SwitchHands"]);
+		Button selectTool     = _state.GetButton(Core.Config.Keybinds["SelectTool"]);
+		Button characterPanel = _state.GetButton(Core.Config.Keybinds["CharacterPanel"]);
+		Button dropItem       = _state.GetButton(Core.Config.Keybinds["DropItem"]);
+		Button menu           = _state.GetButton(Core.Config.Keybinds["Menu"]);
+		Button chat           = _state.GetButton(Core.Config.Keybinds["Chat"]);
+		Button jump           = _state.GetButton(Core.Config.Keybinds["Jump"]);
+		Button hotbarLeft     = _state.GetButton(Core.Config.Keybinds["HotbarLeft"]);
+		Button hotbarRight    = _state.GetButton(Core.Config.Keybinds["HotbarRight"]);
+		Button leftClick      = _state.GetButton(Core.Config.Keybinds["LeftClick"]);
+		Button rightClick     = _state.GetButton(Core.Config.Keybinds["RightClick"]);
 
-		_state.GetButton(c.Keybinds["HotbarLeft"]).OnHeldRepeat  += HotbarLeft;
-		_state.GetButton(c.Keybinds["HotbarRight"]).OnHeldRepeat += HotbarRight;
+		inventory.OnPress        += _callbacks.ToggleInventory;
+		switchHands.OnPress      += _callbacks.FlipHandSlots;
+		selectTool.OnPress       += _callbacks.SelectTool;
+		characterPanel.OnPress   += _callbacks.CharacterDialog;
+		dropItem.OnPress         += _callbacks.DropItem;
+		menu.OnPress             += _callbacks.EscapeMenuDialog;
+		chat.OnPress             += _callbacks.ChatDialog;
+		jump.OnPress             += _callbacks.Jump;
+		jump.OnHeldRepeat        += _callbacks.Jump;
+		hotbarLeft.OnPress       += _callbacks.HotbarLeft;
+		hotbarLeft.OnHeldRepeat  += _callbacks.HotbarLeft;
+		hotbarRight.OnPress      += _callbacks.HotbarRight;
+		hotbarRight.OnHeldRepeat += _callbacks.HotbarRight;
+		leftClick.OnPress        += _callbacks.LeftClickDown;
+		leftClick.OnHeldRepeat   += _callbacks.LeftClickDown;
+		leftClick.OnRelease      += _callbacks.LeftClickUp;
+		rightClick.OnPress       += _callbacks.RightClickDown;
+		rightClick.OnLongPress   += _callbacks.RightClickDown;
+		rightClick.OnRelease     += _callbacks.RightClickUp;
 	}
 
 	// Reserved for checking boolean inputs.
@@ -76,41 +57,34 @@ public class Controls {
 		var player = _api.World.Player?.Entity;
 		if (player == null) return;
 
-		var c = Core.Config.Data;
-		player.Controls.Forward  = _state.LeftStick.Y < -c.Tuning["StickDeadzone"];
-		player.Controls.Backward = _state.LeftStick.Y > c.Tuning["StickDeadzone"];
-		player.Controls.Left     = _state.LeftStick.X < -c.Tuning["StickDeadzone"];
-		player.Controls.Right    = _state.LeftStick.X > c.Tuning["StickDeadzone"];
-		player.Controls.Jump     = _state.GetButton(c.Keybinds["Jump"]).IsActive;
-		player.Controls.Sprint   = _state.GetButton(c.Keybinds["Sprint"]).IsActive;
-		player.Controls.Sneak    = _state.GetButton(c.Keybinds["Sneak"]).IsActive;
+		float sdz = Core.Config.Tuning["StickDeadzone"];
+
+		bool isSprinting = _state.GetButton(Core.Config.Keybinds["Sprint"]).IsActive;
+		bool isSneaking  = _state.GetButton(Core.Config.Keybinds["Sneak"]).IsActive;
+
+		bool isLeftClicking  = _state.GetButton(Core.Config.Keybinds["LeftClick"]).IsActive;
+		bool isRightClicking = _state.GetButton(Core.Config.Keybinds["RightClick"]).IsActive;
+
+		player.Controls.Forward  = _state.LeftStick.Y < -sdz;
+		player.Controls.Backward = _state.LeftStick.Y > sdz;
+		player.Controls.Left     = _state.LeftStick.X < -sdz;
+		player.Controls.Right    = _state.LeftStick.X > sdz;
+
+		player.Controls.Sprint = isSprinting;
+		player.Controls.Sneak  = isSneaking;
+
+		player.Controls.CtrlKey  = isSprinting;
+		player.Controls.ShiftKey = isSneaking;
+
+		if (_api.World is not ClientMain clientMain) return;
+
+		clientMain.MouseStateRaw.Left  = isLeftClicking;
+		clientMain.MouseStateRaw.Right = isRightClicking;
+
+		clientMain.InWorldMouseState.Left  = isLeftClicking;
+		clientMain.InWorldMouseState.Right = isRightClicking;
 	}
 
-	public void Dispose() {
-		var c = Core.Config.Data;
-		_state.GetButton(c.Keybinds["Inventory"]).OnPress      -= ToggleInventory;
-		_state.GetButton(c.Keybinds["SwitchHands"]).OnPress    -= FlipHandSlots;
-		_state.GetButton(c.Keybinds["SelectTool"]).OnPress     -= SelectTool;
-		_state.GetButton(c.Keybinds["CharacterPanel"]).OnPress -= CharacterDialog;
-		_state.GetButton(c.Keybinds["DropItem"]).OnPress       -= DropItem;
-		_state.GetButton(c.Keybinds["DropItem"]).OnLongPress   -= DropItems;
-		_state.GetButton(c.Keybinds["Menu"]).OnPress           -= EscapeMenuDialog;
-		_state.GetButton(c.Keybinds["Chat"]).OnPress           -= ChatDialog;
-		_state.GetButton(c.Keybinds["LeftClick"]).OnPress      -= PrimaryMouse;
-		_state.GetButton(c.Keybinds["RightClick"]).OnPress     -= SecondaryMouse;
-
-		_state.GetButton(c.Keybinds["HotbarLeft"]).OnHeldRepeat  -= HotbarLeft;
-		_state.GetButton(c.Keybinds["HotbarRight"]).OnHeldRepeat -= HotbarRight;
-
-		var player = _api.World.Player?.Entity;
-		if (player == null) return;
-		player.Controls.Forward  = false;
-		player.Controls.Right    = false;
-		player.Controls.Backward = false;
-		player.Controls.Left     = false;
-		player.Controls.Jump     = false;
-		player.Controls.Sprint   = false;
-		player.Controls.Sneak    = false;
-	}
+	public void Dispose() { }
 
 }
