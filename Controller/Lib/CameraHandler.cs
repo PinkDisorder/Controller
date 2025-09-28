@@ -37,9 +37,9 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 
 		if (Math.Abs(state.RightStick.Y) > Core.Config.Tuning["StickDeadzone"]) {
 			pitch = Math.Clamp(
-				pitch - state.RightStick.Y * Core.Config.Tuning["SensitivityPitch"]
-				, PitchClampMin
-				, PitchClampMax
+				pitch - state.RightStick.Y * Core.Config.Tuning["SensitivityPitch"],
+				PitchClampMin,
+				PitchClampMax
 			);
 
 			_accumulatedPitch = pitch;

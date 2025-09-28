@@ -3,6 +3,7 @@
 namespace Controller.Lib;
 
 public static class HotkeyCode {
+
 	// Mouse buttons
 	public const string PrimaryMouse = "primarymouse";
 	public const string SecondaryMouse = "secondarymouse";
@@ -91,4 +92,5 @@ public static class HotkeyCode {
 	public const string CycleDialogOutlineModes = "cycledialogoutlines";
 	public const string TickProfiler = "tickprofiler";
 	public const string PickBlock = "pickblock";
+
 }
