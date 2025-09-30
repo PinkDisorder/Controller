@@ -35,14 +35,16 @@ public class Core : ModSystem {
 		base.StartClientSide(api);
 		Capi = api;
 
-		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText());
+		GLFW.UpdateGamepadMappings(
+			api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText()
+		);
 
 		var harmony = new Harmony("net.vividvoid.controller");
 		harmony.PatchAll();
 
 		State    = new State();
-		Controls = new Controls(Capi, State);
-		Camera   = new CameraHandler(Capi, State);
+		Controls = new Controls(Capi);
+		Camera   = new CameraHandler(Capi);
 
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 
@@ -50,15 +52,14 @@ public class Core : ModSystem {
 			_ => {
 				Controls.ApplyInputs();
 				Camera.ApplyRightStickCamera();
-			}
-			, 0
+			},
+			0
 		);
 	}
 
 	public override void Dispose() {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
 		Capi.Event.UnregisterRenderer(State, EnumRenderStage.Before);
-		Controls.Dispose();
 		State.Dispose();
 		State    = null;
 		Controls = null;

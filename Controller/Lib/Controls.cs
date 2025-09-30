@@ -10,27 +10,36 @@ public class Controls {
 	private readonly State _state;
 	private readonly EventCallbacks _callbacks;
 
-	public Controls(ICoreClientAPI api, State state) {
-		_api       = api;
-		_state     = state;
-		_callbacks = new EventCallbacks(api);
+	private Button inventory;
+	private Button switchHands;
+	private Button selectTool;
+	private Button characterPanel;
+	private Button dropItem;
+	private Button menu;
+	private Button chat;
+	private Button hotbarLeft;
+	private Button hotbarRight;
+	private Button leftClick;
+	private Button rightClick;
+
+	public Controls(ICoreClientAPI api) {
+		_api           = api;
+		_callbacks     = new EventCallbacks(api);
+		inventory      = State.GetButton(Core.Config.Keybinds["Inventory"]);
+		switchHands    = State.GetButton(Core.Config.Keybinds["SwitchHands"]);
+		selectTool     = State.GetButton(Core.Config.Keybinds["SelectTool"]);
+		characterPanel = State.GetButton(Core.Config.Keybinds["CharacterPanel"]);
+		dropItem       = State.GetButton(Core.Config.Keybinds["DropItem"]);
+		menu           = State.GetButton(Core.Config.Keybinds["Menu"]);
+		chat           = State.GetButton(Core.Config.Keybinds["Chat"]);
+		hotbarLeft     = State.GetButton(Core.Config.Keybinds["HotbarLeft"]);
+		hotbarRight    = State.GetButton(Core.Config.Keybinds["HotbarRight"]);
+		leftClick      = State.GetButton(Core.Config.Keybinds["LeftClick"]);
+		rightClick     = State.GetButton(Core.Config.Keybinds["RightClick"]);
 		RegisterListeners();
 	}
 
 	private void RegisterListeners() {
-		Button inventory      = _state.GetButton(Core.Config.Keybinds["Inventory"]);
-		Button switchHands    = _state.GetButton(Core.Config.Keybinds["SwitchHands"]);
-		Button selectTool     = _state.GetButton(Core.Config.Keybinds["SelectTool"]);
-		Button characterPanel = _state.GetButton(Core.Config.Keybinds["CharacterPanel"]);
-		Button dropItem       = _state.GetButton(Core.Config.Keybinds["DropItem"]);
-		Button menu           = _state.GetButton(Core.Config.Keybinds["Menu"]);
-		Button chat           = _state.GetButton(Core.Config.Keybinds["Chat"]);
-		Button jump           = _state.GetButton(Core.Config.Keybinds["Jump"]);
-		Button hotbarLeft     = _state.GetButton(Core.Config.Keybinds["HotbarLeft"]);
-		Button hotbarRight    = _state.GetButton(Core.Config.Keybinds["HotbarRight"]);
-		Button leftClick      = _state.GetButton(Core.Config.Keybinds["LeftClick"]);
-		Button rightClick     = _state.GetButton(Core.Config.Keybinds["RightClick"]);
-
 		inventory.OnPress        += _callbacks.ToggleInventory;
 		switchHands.OnPress      += _callbacks.FlipHandSlots;
 		selectTool.OnPress       += _callbacks.SelectTool;
@@ -38,8 +47,6 @@ public class Controls {
 		dropItem.OnPress         += _callbacks.DropItem;
 		menu.OnPress             += _callbacks.EscapeMenuDialog;
 		chat.OnPress             += _callbacks.ChatDialog;
-		jump.OnPress             += _callbacks.Jump;
-		jump.OnHeldRepeat        += _callbacks.Jump;
 		hotbarLeft.OnPress       += _callbacks.HotbarLeft;
 		hotbarLeft.OnHeldRepeat  += _callbacks.HotbarLeft;
 		hotbarRight.OnPress      += _callbacks.HotbarRight;
@@ -59,19 +66,25 @@ public class Controls {
 
 		float sdz = Core.Config.Tuning["StickDeadzone"];
 
-		bool isSprinting = _state.GetButton(Core.Config.Keybinds["Sprint"]).IsActive;
-		bool isSneaking  = _state.GetButton(Core.Config.Keybinds["Sneak"]).IsActive;
+		bool isSprinting = State.GetButton(Core.Config.Keybinds["Sprint"]).IsActive;
 
-		bool isLeftClicking  = _state.GetButton(Core.Config.Keybinds["LeftClick"]).IsActive;
-		bool isRightClicking = _state.GetButton(Core.Config.Keybinds["RightClick"]).IsActive;
+		bool isSneaking = State.GetButton(Core.Config.Keybinds["Sneak"]).IsActive;
+		bool isJumping  = State.GetButton(Core.Config.Keybinds["Jump"]).IsActive;
 
-		player.Controls.Forward  = _state.LeftStick.Y < -sdz;
-		player.Controls.Backward = _state.LeftStick.Y > sdz;
-		player.Controls.Left     = _state.LeftStick.X < -sdz;
-		player.Controls.Right    = _state.LeftStick.X > sdz;
+		bool isLeftClicking =
+			State.GetButton(Core.Config.Keybinds["LeftClick"]).IsActive;
+
+		bool isRightClicking =
+			State.GetButton(Core.Config.Keybinds["RightClick"]).IsActive;
+
+		player.Controls.Forward  = State.LeftStick.Y < -sdz;
+		player.Controls.Backward = State.LeftStick.Y > sdz;
+		player.Controls.Left     = State.LeftStick.X < -sdz;
+		player.Controls.Right    = State.LeftStick.X > sdz;
 
 		player.Controls.Sprint = isSprinting;
 		player.Controls.Sneak  = isSneaking;
+		player.Controls.Jump   = isJumping;
 
 		player.Controls.CtrlKey  = isSprinting;
 		player.Controls.ShiftKey = isSneaking;
@@ -84,7 +97,5 @@ public class Controls {
 		clientMain.InWorldMouseState.Left  = isLeftClicking;
 		clientMain.InWorldMouseState.Right = isRightClicking;
 	}
-
-	public void Dispose() { }
 
 }

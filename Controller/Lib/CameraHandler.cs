@@ -8,7 +8,7 @@ using Controller.Lib.Sorcery;
 
 namespace Controller.Lib;
 
-public class CameraHandler(ICoreClientAPI api, State state) {
+public class CameraHandler(ICoreClientAPI api) {
 
 	// ReSharper disable once InconsistentNaming
 	private readonly NativeWindow Window = new WindowWrapper(api).Native;
@@ -31,13 +31,16 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 		// pitch is vertical
 		float pitch = (_accumulatedPitch ??= Player.CameraPitch);
 
-		if (Math.Abs(state.RightStick.X) > Core.Config.Tuning["StickDeadzone"]) {
-			yaw = GameMath.Mod(yaw - state.RightStick.X * Core.Config.Tuning["SensitivityYaw"], GameMath.TWOPI);
+		if (Math.Abs(State.RightStick.X) > Core.Config.Tuning["StickDeadzone"]) {
+			yaw = GameMath.Mod(
+				yaw - State.RightStick.X * Core.Config.Tuning["SensitivityYaw"],
+				GameMath.TWOPI
+			);
 		}
 
-		if (Math.Abs(state.RightStick.Y) > Core.Config.Tuning["StickDeadzone"]) {
+		if (Math.Abs(State.RightStick.Y) > Core.Config.Tuning["StickDeadzone"]) {
 			pitch = Math.Clamp(
-				pitch - state.RightStick.Y * Core.Config.Tuning["SensitivityPitch"],
+				pitch - State.RightStick.Y * Core.Config.Tuning["SensitivityPitch"],
 				PitchClampMin,
 				PitchClampMax
 			);
@@ -51,14 +54,22 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 		api.Input.MousePitch = pitch;
 
 		// Update target
-		Vec3d clientCameraPos = Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
+		Vec3d clientCameraPos =
+			Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
 
 		float range = Player.WorldData.PickingRange;
 
 		BlockSelection?  blockSel = null;
 		EntitySelection? entSel   = null;
 
-		api.World.RayTraceForSelection(clientCameraPos, pitch, yaw, range, ref blockSel, ref entSel);
+		api.World.RayTraceForSelection(
+			clientCameraPos,
+			pitch,
+			yaw,
+			range,
+			ref blockSel,
+			ref entSel
+		);
 
 		Player.Entity.BlockSelection  = blockSel;
 		Player.Entity.EntitySelection = entSel;
@@ -68,7 +79,12 @@ public class CameraHandler(ICoreClientAPI api, State state) {
 			return;
 		}
 
-		api.World.HighlightBlocks(Player, 0, [ blockSel.Position ], EnumHighlightBlocksMode.CenteredToSelectedBlock);
+		api.World.HighlightBlocks(
+			Player,
+			0,
+			[ blockSel.Position ],
+			EnumHighlightBlocksMode.CenteredToSelectedBlock
+		);
 	}
 
 }

@@ -8,20 +8,24 @@ public class EventCallbacks(ICoreClientAPI api) {
 
 	private const int HotbarLength = 10;
 
-	private int CenterX = api.Render.FrameWidth / 2;
-	private int CenterY = api.Render.FrameHeight / 2;
+	private readonly int _centerX = api.Render.FrameWidth / 2;
+	private readonly int CenterY = api.Render.FrameHeight / 2;
 
 	private int ActiveHotbarSlotNumber {
 		get => api.World.Player?.InventoryManager.ActiveHotbarSlotNumber ?? 0;
 		set {
-			if (api.World.Player is not null) api.World.Player.InventoryManager.ActiveHotbarSlotNumber = value;
+			if (api.World.Player is not null)
+				api.World.Player.InventoryManager.ActiveHotbarSlotNumber = value;
 		}
 	}
 
-	private static BindingFlags accessFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+	private static BindingFlags accessFlags =
+		BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
-	private readonly EventInfo? _mouseDownInfo = api.Event.GetType().GetEvent("MouseUp", accessFlags);
-	private readonly EventInfo? _mouseUpInfo = api.Event.GetType().GetEvent("MouseDown", accessFlags);
+	private readonly EventInfo? _mouseDownInfo =
+		api.Event.GetType().GetEvent("MouseUp", accessFlags);
+	private readonly EventInfo? _mouseUpInfo =
+		api.Event.GetType().GetEvent("MouseDown", accessFlags);
 
 	private void TriggerHotKey(string hotkeyCode) {
 		if (api.World.Player?.Entity == null) return;
@@ -39,7 +43,9 @@ public class EventCallbacks(ICoreClientAPI api) {
 		if (eventInfo is null) return;
 
 		MouseEventDelegate? del =
-			(MouseEventDelegate?)api.Event.GetType().GetField(eventInfo.Name, accessFlags)?.GetValue(api.Event);
+			(MouseEventDelegate?)api.Event.GetType()
+				.GetField(eventInfo.Name, accessFlags)
+				?.GetValue(api.Event);
 
 		del?.Invoke(new MouseEvent(x, y, btn));
 	}
@@ -65,25 +71,23 @@ public class EventCallbacks(ICoreClientAPI api) {
 	public void FlipHandSlots() =>
 		TriggerHotKey(HotkeyCode.FlipHandSlots);
 
-	public void Jump() =>
-		TriggerHotKey(HotkeyCode.Jump);
-
 	public void LeftClickUp() =>
-		OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, false);
+		OnMouseInput(_centerX, CenterY, EnumMouseButton.Left, false);
 
 	public void LeftClickDown() =>
-		OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, true);
+		OnMouseInput(_centerX, CenterY, EnumMouseButton.Left, true);
 
 	public void RightClickUp() =>
-		OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, false);
+		OnMouseInput(_centerX, CenterY, EnumMouseButton.Right, false);
 
 	public void RightClickDown() =>
-		OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, true);
+		OnMouseInput(_centerX, CenterY, EnumMouseButton.Right, true);
 
 	public void HotbarRight() =>
 		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber + 1) % HotbarLength;
 
 	public void HotbarLeft() =>
-		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber - 1 + HotbarLength) % HotbarLength;
+		ActiveHotbarSlotNumber =
+			(ActiveHotbarSlotNumber - 1 + HotbarLength) % HotbarLength;
 
 }
