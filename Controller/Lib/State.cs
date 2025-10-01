@@ -1,12 +1,10 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Numerics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vintagestory.API.Client;
 using Controller.Enums;
 using Controller.Lib.Util;
-using Vintagestory.API.Common;
 
 namespace Controller.Lib;
 
