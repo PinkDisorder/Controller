@@ -32,10 +32,7 @@ public class CameraHandler(ICoreClientAPI api) {
 		float pitch = (_accumulatedPitch ??= Player.CameraPitch);
 
 		if (Math.Abs(State.RightStick.X) > Core.Config.Tuning["StickDeadzone"]) {
-			yaw = GameMath.Mod(
-				yaw - State.RightStick.X * Core.Config.Tuning["SensitivityYaw"],
-				GameMath.TWOPI
-			);
+			yaw = GameMath.Mod(yaw - State.RightStick.X * Core.Config.Tuning["SensitivityYaw"], GameMath.TWOPI);
 		}
 
 		if (Math.Abs(State.RightStick.Y) > Core.Config.Tuning["StickDeadzone"]) {
@@ -54,22 +51,14 @@ public class CameraHandler(ICoreClientAPI api) {
 		api.Input.MousePitch = pitch;
 
 		// Update target
-		Vec3d clientCameraPos =
-			Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
+		Vec3d clientCameraPos = Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
 
 		float range = Player.WorldData.PickingRange;
 
 		BlockSelection?  blockSel = null;
 		EntitySelection? entSel   = null;
 
-		api.World.RayTraceForSelection(
-			clientCameraPos,
-			pitch,
-			yaw,
-			range,
-			ref blockSel,
-			ref entSel
-		);
+		api.World.RayTraceForSelection(clientCameraPos, pitch, yaw, range, ref blockSel, ref entSel);
 
 		Player.Entity.BlockSelection  = blockSel;
 		Player.Entity.EntitySelection = entSel;
@@ -79,12 +68,7 @@ public class CameraHandler(ICoreClientAPI api) {
 			return;
 		}
 
-		api.World.HighlightBlocks(
-			Player,
-			0,
-			[ blockSel.Position ],
-			EnumHighlightBlocksMode.CenteredToSelectedBlock
-		);
+		api.World.HighlightBlocks(Player, 0, [ blockSel.Position ], EnumHighlightBlocksMode.CenteredToSelectedBlock);
 	}
 
 }

@@ -35,9 +35,7 @@ public class Core : ModSystem {
 		base.StartClientSide(api);
 		Capi = api;
 
-		GLFW.UpdateGamepadMappings(
-			api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText()
-		);
+		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText());
 
 		var harmony = new Harmony("net.vividvoid.controller");
 		harmony.PatchAll();
