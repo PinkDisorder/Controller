@@ -39,7 +39,7 @@ public class EventCallbacks(ICoreClientAPI api) {
 			case false when _mouseUpInfo is null:  return;
 		}
 
-		EventInfo eventInfo = dirIsDown ? _mouseDownInfo : _mouseUpInfo;
+		EventInfo? eventInfo = dirIsDown ? _mouseDownInfo : _mouseUpInfo;
 		if (eventInfo is null) return;
 
 		MouseEventDelegate? del =
