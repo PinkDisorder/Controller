@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Numerics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vintagestory.API.Client;
 using Controller.Enums;
 using Controller.Lib.Util;
+using Vintagestory.API.Common;
 
 namespace Controller.Lib;
 
@@ -13,30 +15,30 @@ public class State : IRenderer {
 	// The length of the axes will always be 6 as per glfw documentation.
 	private const int AxesLength = 6;
 
-	private readonly static int JoystickId =
-		Enumerable.Range(0, 16).FirstOrDefault(GLFW.JoystickPresent, -1);
+	// TODO: Allow the user to manually change this.
+	private readonly static int JoystickId = ScanForJoystickThatReportsState();
 
-	private readonly static GamepadButton[] ButtonCodes =
-		Enum.GetValues<GamepadButton>();
+	private static int ScanForJoystickThatReportsState() {
+		for (int i = 0; i < 16; i++) {
+			bool found = GLFW.GetGamepadState(i, out var _);
+			if (found) return i;
+		}
 
-	private readonly static string ButtonNames =
-		string.Join(", ", Enum.GetNames(typeof(GamepadButton)));
+		return -1;
+	}
+
+	private readonly static GamepadButton[] ButtonCodes = Enum.GetValues<GamepadButton>();
+
+	private readonly static string ButtonNames = string.Join(", ", Enum.GetNames(typeof(GamepadButton)));
 
 	private readonly static Dictionary<GamepadButton, Button> Buttons =
 		ButtonCodes.ToDictionary(btn => btn, _ => new Button());
 
-	public readonly static AnalogStick LeftStick =
-		new((int)GamepadAxis.LeftX, (int)GamepadAxis.LeftY);
-
-	public readonly static AnalogStick RightStick =
-		new((int)GamepadAxis.RightX, (int)GamepadAxis.RightY);
+	public static AnalogStick LeftStick { get; } = new((int)GamepadAxis.LeftX, (int)GamepadAxis.LeftY);
+	public static AnalogStick RightStick { get; } = new((int)GamepadAxis.RightX, (int)GamepadAxis.RightY);
 
 	private readonly static Dictionary<string, GamepadButton> GamepadButtonMap =
-		ButtonCodes.ToDictionary(
-			btn => btn.ToString(),
-			btn => btn,
-			StringComparer.OrdinalIgnoreCase
-		);
+		ButtonCodes.ToDictionary(btn => btn.ToString(), btn => btn, StringComparer.OrdinalIgnoreCase);
 
 	private readonly static Dictionary<GamepadAxis, Button> Triggers = new() {
 		{ GamepadAxis.LeftTrigger, new Button() },
@@ -44,9 +46,7 @@ public class State : IRenderer {
 	};
 
 	public static Button GetButton(string name) {
-		string err =
-			$"Received user defined keybind {name}."
-			+ $"This key is unknown. Possible keys: {ButtonNames}.";
+		string err = $"Received user defined keybind {name}." + $"This key is unknown. Possible keys: {ButtonNames}.";
 
 		return name switch {
 			"LeftTrigger"  => Triggers[GamepadAxis.LeftTrigger],
@@ -61,7 +61,6 @@ public class State : IRenderer {
 		// Early exit if we have no joystick or can't read it.
 		if (JoystickId < 0) return;
 		if (!GLFW.GetGamepadState(JoystickId, out var gamepadState)) return;
-
 
 		foreach ((GamepadButton btn, Button button) in Buttons) {
 			byte state = gamepadState.Buttons[(int)btn];
