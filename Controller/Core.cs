@@ -13,8 +13,9 @@ public class Core : ModSystem {
 	#nullable disable
 	[UsedImplicitly(ImplicitUseKindFlags.Access)]
 	public static string ModId { get; private set; }
-	public static Config Config { get; private set; }
+	[UsedImplicitly(ImplicitUseKindFlags.Access)]
 	public static ILogger Logger { get; private set; }
+	public static Config Config { get; private set; }
 
 	private ICoreClientAPI Capi { get; set; }
 	private State State { get; set; }
