@@ -8,7 +8,8 @@ public class ConfigData {
 		{ "StickDeadzone", 0.15f },
 		{ "TriggerDeadzone", 0.3f },
 		{ "SensitivityPitch", 0.1f },
-		{ "SensitivityYaw", 0.05f }
+		{ "SensitivityYaw", 0.05f },
+		{ "StickSmoothing", 0.2f }
 	};
 
 // keybinds
