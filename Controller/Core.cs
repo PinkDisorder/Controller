@@ -13,22 +13,23 @@ public class Core : ModSystem {
 	#nullable disable
 	[UsedImplicitly(ImplicitUseKindFlags.Access)]
 	public static string ModId { get; private set; }
-	[UsedImplicitly(ImplicitUseKindFlags.Access)]
-	public static ILogger Logger { get; private set; }
 	public static Config Config { get; private set; }
 
 	private State State { get; set; }
-	private CameraHandler Camera { get; set; }
 
 	public static ICoreClientAPI Capi { get; private set; }
 
-	private static long _tickListenerId;
+	private long _tickListenerId;
 
 	#nullable restore
 
+	private static void OnGameTick(float v) {
+		Controls.ApplyInputs();
+		CameraHandler.ApplyRightStickCamera();
+	}
+
 	public override void StartPre(ICoreAPI api) {
 		ModId  = Mod.Info.ModID;
-		Logger = Mod.Logger;
 		Config = new Config(api, Mod);
 	}
 
@@ -36,33 +37,29 @@ public class Core : ModSystem {
 		base.StartClientSide(api);
 		Capi = api;
 
+		// This is required for any modern controller to get read
+		// correctly. Remember to update regularly.
+		// Perhaps write some kind of method to automatically
+		// pull it from git.
 		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText());
 
 		var harmony = new Harmony("net.vividvoid.controller");
 		harmony.PatchAll();
 
 		State = new State();
-		Controls.RegisterListeners();
-		Camera = new CameraHandler(Capi);
 
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
+		_tickListenerId = Capi.Event.RegisterGameTickListener(OnGameTick, 0);
 
-		_tickListenerId = Capi.Event.RegisterGameTickListener(
-			_ => {
-				Controls.ApplyInputs();
-				Camera.ApplyRightStickCamera();
-			},
-			0
-		);
+		Controls.RegisterListeners();
 	}
 
 	public override void Dispose() {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
 		Capi.Event.UnregisterRenderer(State, EnumRenderStage.Before);
-		State.Dispose();
 		Controls.UnregisterListeners();
+		State.Dispose();
 		State  = null;
-		Camera = null;
 		Config = null;
 		Capi   = null;
 		base.Dispose();

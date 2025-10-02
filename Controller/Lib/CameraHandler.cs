@@ -7,25 +7,25 @@ using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
-public class CameraHandler(ICoreClientAPI api) {
+public static class CameraHandler {
 
 	private const float PitchClampMin = (float)(Math.PI / 2);
 	private const float PitchClampMax = (float)((Math.PI * 13) / 9);
 
-	private IClientPlayer? Player => api.World.Player;
+	private static IClientPlayer? Player => Core.Capi.World.Player;
 
-	private float? _accumulatedPitch = api.World.Player?.CameraPitch;
+	private static float? _accumulatedPitch = Core.Capi.World.Player?.CameraPitch;
 
-	private bool BlockFilter(BlockPos pos, Block? block) {
-		if (block == null | ClientSettings.RenderMetaBlocks || block?.RenderPass != EnumChunkRenderPass.Meta) return true;
-		return block.GetInterface<IMetaBlock>(api.World, pos)?.IsSelectable(pos) ?? false;
+	private static bool BlockFilter(BlockPos pos, Block? block) {
+		if (block == null || ClientSettings.RenderMetaBlocks || block.RenderPass != EnumChunkRenderPass.Meta) return true;
+		return block.GetInterface<IMetaBlock>(Core.Capi.World, pos)?.IsSelectable(pos) ?? false;
 	}
 
-	private bool EntityFilter(Entity e) {
+	private static bool EntityFilter(Entity e) {
 		return e.IsInteractable && e.EntityId != Player?.Entity.EntityId;
 	}
 
-	public void ApplyRightStickCamera() {
+	public static void ApplyRightStickCamera() {
 		if (Player?.Entity == null) return;
 
 		// yaw is horizontal
@@ -48,42 +48,53 @@ public class CameraHandler(ICoreClientAPI api) {
 			_accumulatedPitch = pitch;
 		}
 
-		Player.CameraYaw     = yaw;
-		Player.CameraPitch   = pitch;
-		api.Input.MouseYaw   = yaw;
-		api.Input.MousePitch = pitch;
+		Player.CameraYaw           = yaw;
+		Player.CameraPitch         = pitch;
+		Core.Capi.Input.MouseYaw   = yaw;
+		Core.Capi.Input.MousePitch = pitch;
 		UpdateCurrentSelection(pitch, yaw);
 	}
 
-	private void UpdateCurrentSelection(float pitch, float yaw) {
-		// Update target
+	private static void UpdateCurrentSelection(float pitch, float yaw) {
 		if (Player is null) return;
-		Vec3d clientCameraPos = Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
 
-		float range = Player.WorldData.PickingRange;
+		ClientMain game  = (ClientMain)Core.Capi.World;
+		float      range = Player.WorldData.PickingRange;
 
-		BlockSelection?  blockSel = null;
-		EntitySelection? entSel   = null;
+		Vec3d clientCameraPos  = Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
+		bool  liquidSelectable = game.LiquidSelectable;
 
-		api.World.RayTraceForSelection(
+
+		Player.Entity.PreviousBlockSelection = Player.Entity.BlockSelection?.Position.Copy();
+
+		bool rClickStrictly = !game.InWorldMouseState.Left && game.InWorldMouseState.Right;
+
+		bool selectable = Player.InventoryManager.ActiveHotbarSlot?.Itemstack?.Collectible is {
+			LiquidSelectable: true
+		};
+
+		if (rClickStrictly && selectable) {
+			game.forceLiquidSelectable = true;
+		}
+
+		Core.Capi.World.RayTraceForSelection(
 			clientCameraPos,
 			pitch,
 			yaw,
 			range,
-			ref blockSel,
-			ref entSel,
+			ref Player.Entity.BlockSelection,
+			ref Player.Entity.EntitySelection,
 			BlockFilter,
 			EntityFilter
 		);
 
-		Player.Entity.BlockSelection  = blockSel;
-		Player.Entity.EntitySelection = entSel;
+		game.forceLiquidSelectable = liquidSelectable;
 
-
-		blockSel?.Block.OnBeingLookedAt(
+		Player.Entity.BlockSelection?.Block.OnBeingLookedAt(
 			Player,
-			blockSel,
-			Player.Entity.PreviousBlockSelection is null || blockSel.Position != Player.Entity.PreviousBlockSelection
+			Player.Entity.BlockSelection,
+			Player.Entity.PreviousBlockSelection is null
+			|| Player.Entity.BlockSelection.Position != Player.Entity.PreviousBlockSelection
 		);
 	}
 
