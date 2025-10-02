@@ -1,123 +1,154 @@
-using Controller.Lib.Util;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Vintagestory.API.Client;
+using Vintagestory.API.Common;
 using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
-public class Controls {
+public static class Controls {
 
-	private readonly ICoreClientAPI _api;
-	private readonly EventCallbacks _callbacks;
+	private record ControlCallbacks {
 
-	private Button _inventory;
-	private Button _switchHands;
-	private Button _selectTool;
-	private Button _characterPanel;
-	private Button _dropItem;
-	private Button _menu;
-	private Button _chat;
-	private Button _hotbarLeft;
-	private Button _hotbarRight;
-	private Button _leftClick;
-	private Button _rightClick;
-	private Button _worldMap;
+		public Action? OnPress { get; init; }
+		public Action? OnHeldRepeat { get; init; }
+		public Action? OnRelease { get; init; }
 
-	public Controls(ICoreClientAPI api) {
-		_api            = api;
-		_callbacks      = new EventCallbacks(api);
-		_inventory      = State.GetButton(Core.Config.Keybinds["Inventory"]);
-		_switchHands    = State.GetButton(Core.Config.Keybinds["SwitchHands"]);
-		_selectTool     = State.GetButton(Core.Config.Keybinds["SelectTool"]);
-		_characterPanel = State.GetButton(Core.Config.Keybinds["CharacterPanel"]);
-		_dropItem       = State.GetButton(Core.Config.Keybinds["DropItem"]);
-		_menu           = State.GetButton(Core.Config.Keybinds["Menu"]);
-		_chat           = State.GetButton(Core.Config.Keybinds["Chat"]);
-		_hotbarLeft     = State.GetButton(Core.Config.Keybinds["HotbarLeft"]);
-		_hotbarRight    = State.GetButton(Core.Config.Keybinds["HotbarRight"]);
-		_leftClick      = State.GetButton(Core.Config.Keybinds["LeftClick"]);
-		_rightClick     = State.GetButton(Core.Config.Keybinds["RightClick"]);
-		_worldMap       = State.GetButton(Core.Config.Keybinds["Map"]);
+	}
 
-		RegisterListeners();
+	private const int HotbarLength = 10;
+
+	private readonly static int CenterX = Core.Capi.Render.FrameWidth / 2;
+	private readonly static int CenterY = Core.Capi.Render.FrameHeight / 2;
+
+	private static int ActiveHotbarSlotNumber {
+		get => Core.Capi.World.Player?.InventoryManager.ActiveHotbarSlotNumber ?? 0;
+		set {
+			if (Core.Capi.World.Player is not null)
+				Core.Capi.World.Player.InventoryManager.ActiveHotbarSlotNumber = value;
+		}
+	}
+
+	private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+
+	private readonly static EventInfo? MouseDownInfo = Core.Capi.Event.GetType().GetEvent("MouseUp", Flags);
+	private readonly static EventInfo? MouseUpInfo = Core.Capi.Event.GetType().GetEvent("MouseDown", Flags);
+
+	private static void TriggerHotKey(string hotkeyCode) {
+		if (Core.Capi.World.Player?.Entity == null) return;
+		HotKey key = Core.Capi.Input.GetHotKeyByCode(hotkeyCode);
+		key.Handler(key.CurrentMapping);
+	}
+
+	private static void OnMouseInput(int x, int y, EnumMouseButton btn, bool dirIsDown) {
+		switch (dirIsDown) {
+			case true when MouseDownInfo is null: return;
+			case false when MouseUpInfo is null:  return;
+		}
+
+		EventInfo? eventInfo = dirIsDown ? MouseDownInfo : MouseUpInfo;
+		if (eventInfo is null) return;
+
+		MouseEventDelegate? del =
+			(MouseEventDelegate?)Core.Capi.Event.GetType().GetField(eventInfo.Name, Flags)?.GetValue(Core.Capi.Event);
+
+		del?.Invoke(new MouseEvent(x, y, btn));
+	}
+
+	private readonly static Dictionary<string, ControlCallbacks> CallbackStore = new() {
+		["Inventory"] = new ControlCallbacks() {
+			OnPress = ToggleInventory
+		},
+		["SwitchHands"] = new ControlCallbacks() {
+			OnPress = FlipHandSlots
+		},
+		["SelectTool"] = new ControlCallbacks() {
+			OnPress = SelectTool
+		},
+		["CharacterPanel"] = new ControlCallbacks() {
+			OnPress = CharacterDialog
+		},
+		["DropItem"] = new ControlCallbacks() {
+			OnPress = DropItem
+		},
+
+		["Menu"] = new ControlCallbacks() {
+			OnPress = EscapeMenuDialog
+		},
+		["Map"] = new ControlCallbacks() {
+			OnPress = WorldMapDialog
+		},
+
+		["Chat"] = new ControlCallbacks() {
+			OnPress = ChatDialog
+		},
+
+		["HotbarLeft"] = new ControlCallbacks() {
+			OnPress      = HotbarLeft,
+			OnHeldRepeat = HotbarLeft
+		},
+		["HotbarRight"] = new ControlCallbacks() {
+			OnPress      = HotbarRight,
+			OnHeldRepeat = HotbarRight
+		},
+		["LeftClick"] = new ControlCallbacks() {
+			OnPress      = LeftClickDown,
+			OnHeldRepeat = LeftClickDown,
+			OnRelease    = LeftClickUp
+		},
+		["RightClick"] = new ControlCallbacks() {
+			OnPress      = RightClickDown,
+			OnHeldRepeat = RightClickDown,
+			OnRelease    = RightClickUp
+		},
+	};
+
+	public static void RegisterListeners() {
+		foreach ((string keybind, ControlCallbacks callbacks) in CallbackStore) {
+			var button = State.GetButton(Core.Config.Keybinds[keybind]);
+
+			if (callbacks.OnPress is not null) {
+				button.OnPress += callbacks.OnPress;
+			}
+
+			if (callbacks.OnHeldRepeat is not null) {
+				button.OnHeldRepeat += callbacks.OnHeldRepeat;
+			}
+
+			if (callbacks.OnRelease is not null) {
+				button.OnRelease += callbacks.OnRelease;
+			}
+		}
+	}
+
+	public static void UnregisterListeners() {
+		foreach ((string keybind, ControlCallbacks callbacks) in CallbackStore) {
+			var button = State.GetButton(Core.Config.Keybinds[keybind]);
+
+			if (callbacks.OnPress is not null) {
+				button.OnPress -= callbacks.OnPress;
+			}
+
+			if (callbacks.OnHeldRepeat is not null) {
+				button.OnHeldRepeat -= callbacks.OnHeldRepeat;
+			}
+
+			if (callbacks.OnRelease is not null) {
+				button.OnRelease -= callbacks.OnRelease;
+			}
+		}
 	}
 
 	// TODO: Create a config event that calls this whenever there's a keybind change.
-	private void ReloadKeybinds() {
+	private static void ReloadKeybinds() {
 		UnregisterListeners();
-		ReInitButtons();
 		RegisterListeners();
 	}
 
-	private void ReInitButtons() {
-		_inventory      = State.GetButton(Core.Config.Keybinds["Inventory"]);
-		_switchHands    = State.GetButton(Core.Config.Keybinds["SwitchHands"]);
-		_selectTool     = State.GetButton(Core.Config.Keybinds["SelectTool"]);
-		_characterPanel = State.GetButton(Core.Config.Keybinds["CharacterPanel"]);
-		_dropItem       = State.GetButton(Core.Config.Keybinds["DropItem"]);
-		_menu           = State.GetButton(Core.Config.Keybinds["Menu"]);
-		_chat           = State.GetButton(Core.Config.Keybinds["Chat"]);
-		_hotbarLeft     = State.GetButton(Core.Config.Keybinds["HotbarLeft"]);
-		_hotbarRight    = State.GetButton(Core.Config.Keybinds["HotbarRight"]);
-		_leftClick      = State.GetButton(Core.Config.Keybinds["LeftClick"]);
-		_rightClick     = State.GetButton(Core.Config.Keybinds["RightClick"]);
-		_worldMap       = State.GetButton(Core.Config.Keybinds["Map"]);
-	}
-
-	private void RegisterListeners() {
-		_inventory.OnPress      += _callbacks.ToggleInventory;
-		_switchHands.OnPress    += _callbacks.FlipHandSlots;
-		_selectTool.OnPress     += _callbacks.SelectTool;
-		_characterPanel.OnPress += _callbacks.CharacterDialog;
-		_dropItem.OnPress       += _callbacks.DropItem;
-		_menu.OnPress           += _callbacks.EscapeMenuDialog;
-		_chat.OnPress           += _callbacks.ChatDialog;
-
-		_hotbarLeft.OnPress      += _callbacks.HotbarLeft;
-		_hotbarLeft.OnHeldRepeat += _callbacks.HotbarLeft;
-
-		_hotbarRight.OnPress      += _callbacks.HotbarRight;
-		_hotbarRight.OnHeldRepeat += _callbacks.HotbarRight;
-
-		_leftClick.OnPress      += _callbacks.LeftClickDown;
-		_leftClick.OnHeldRepeat += _callbacks.LeftClickDown;
-		_leftClick.OnRelease    += _callbacks.LeftClickUp;
-
-		_rightClick.OnPress     += _callbacks.RightClickDown;
-		_rightClick.OnLongPress += _callbacks.RightClickDown;
-		_rightClick.OnRelease   += _callbacks.RightClickUp;
-
-		_worldMap.OnPress += _callbacks.WorldMapDialog;
-	}
-
-	private void UnregisterListeners() {
-		_inventory.OnPress      -= _callbacks.ToggleInventory;
-		_switchHands.OnPress    -= _callbacks.FlipHandSlots;
-		_selectTool.OnPress     -= _callbacks.SelectTool;
-		_characterPanel.OnPress -= _callbacks.CharacterDialog;
-		_dropItem.OnPress       -= _callbacks.DropItem;
-		_menu.OnPress           -= _callbacks.EscapeMenuDialog;
-		_chat.OnPress           -= _callbacks.ChatDialog;
-
-		_hotbarLeft.OnPress      -= _callbacks.HotbarLeft;
-		_hotbarLeft.OnHeldRepeat -= _callbacks.HotbarLeft;
-
-		_hotbarRight.OnPress      -= _callbacks.HotbarRight;
-		_hotbarRight.OnHeldRepeat -= _callbacks.HotbarRight;
-
-		_leftClick.OnPress      -= _callbacks.LeftClickDown;
-		_leftClick.OnHeldRepeat -= _callbacks.LeftClickDown;
-		_leftClick.OnRelease    -= _callbacks.LeftClickUp;
-
-		_rightClick.OnPress     -= _callbacks.RightClickDown;
-		_rightClick.OnLongPress -= _callbacks.RightClickDown;
-		_rightClick.OnRelease   -= _callbacks.RightClickUp;
-
-		_worldMap.OnPress -= _callbacks.WorldMapDialog;
-	}
-
 	// Reserved for checking boolean inputs.
-	public void ApplyInputs() {
-		var player = _api.World.Player?.Entity;
+	public static void ApplyInputs() {
+		var player = Core.Capi.World.Player?.Entity;
 		if (player == null) return;
 
 		float sdz = Core.Config.Tuning["StickDeadzone"];
@@ -143,7 +174,7 @@ public class Controls {
 		player.Controls.CtrlKey  = isSprinting;
 		player.Controls.ShiftKey = isSneaking;
 
-		if (_api.World is not ClientMain clientMain) return;
+		if (Core.Capi.World is not ClientMain clientMain) return;
 
 		clientMain.MouseStateRaw.Left  = isLeftClicking;
 		clientMain.MouseStateRaw.Right = isRightClicking;
@@ -151,5 +182,47 @@ public class Controls {
 		clientMain.InWorldMouseState.Left  = isLeftClicking;
 		clientMain.InWorldMouseState.Right = isRightClicking;
 	}
+
+	private static void ToggleInventory() =>
+		TriggerHotKey(HotkeyCode.InventoryDialog);
+
+	private static void CharacterDialog() =>
+		TriggerHotKey(HotkeyCode.CharacterDialog);
+
+	private static void DropItem() =>
+		TriggerHotKey(HotkeyCode.DropItem);
+
+	private static void SelectTool() =>
+		TriggerHotKey(HotkeyCode.ToolModeSelect);
+
+	private static void EscapeMenuDialog() =>
+		TriggerHotKey(HotkeyCode.EscapeMenuDialog);
+
+	private static void WorldMapDialog() =>
+		TriggerHotKey(HotkeyCode.WorldMapDialog);
+
+	private static void ChatDialog() =>
+		TriggerHotKey(HotkeyCode.ChatDialog);
+
+	private static void FlipHandSlots() =>
+		TriggerHotKey(HotkeyCode.FlipHandSlots);
+
+	private static void LeftClickUp() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, false);
+
+	private static void LeftClickDown() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Left, true);
+
+	private static void RightClickUp() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, false);
+
+	private static void RightClickDown() =>
+		OnMouseInput(CenterX, CenterY, EnumMouseButton.Right, true);
+
+	private static void HotbarRight() =>
+		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber + 1) % HotbarLength;
+
+	private static void HotbarLeft() =>
+		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber - 1 + HotbarLength) % HotbarLength;
 
 }
