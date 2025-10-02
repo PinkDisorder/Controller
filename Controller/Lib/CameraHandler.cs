@@ -5,6 +5,8 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Common;
 using Vintagestory.API.Client;
 using Controller.Lib.Sorcery;
+using Vintagestory.API.Common.Entities;
+using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
@@ -19,6 +21,15 @@ public class CameraHandler(ICoreClientAPI api) {
 	private IClientPlayer? Player => api.World.Player;
 
 	private float? _accumulatedPitch = api.World.Player?.CameraPitch;
+
+	private bool BlockFilter(BlockPos pos, Block? block) {
+		if (block == null | ClientSettings.RenderMetaBlocks || block?.RenderPass != EnumChunkRenderPass.Meta) return true;
+		return block.GetInterface<IMetaBlock>(api.World, pos)?.IsSelectable(pos) ?? false;
+	}
+
+	private bool EntityFilter(Entity e) {
+		return e.IsInteractable && e.EntityId != Player?.Entity.EntityId;
+	}
 
 	public unsafe void ApplyRightStickCamera() {
 		if (Player?.Entity == null) return;
@@ -49,7 +60,10 @@ public class CameraHandler(ICoreClientAPI api) {
 		Player.CameraPitch   = pitch;
 		api.Input.MouseYaw   = yaw;
 		api.Input.MousePitch = pitch;
+		UpdateCurrentSelection(pitch, yaw);
+	}
 
+	private void UpdateCurrentSelection(float pitch, float yaw) {
 		// Update target
 		Vec3d clientCameraPos = Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
 
@@ -58,17 +72,26 @@ public class CameraHandler(ICoreClientAPI api) {
 		BlockSelection?  blockSel = null;
 		EntitySelection? entSel   = null;
 
-		api.World.RayTraceForSelection(clientCameraPos, pitch, yaw, range, ref blockSel, ref entSel);
+		api.World.RayTraceForSelection(
+			clientCameraPos,
+			pitch,
+			yaw,
+			range,
+			ref blockSel,
+			ref entSel,
+			BlockFilter,
+			EntityFilter
+		);
 
 		Player.Entity.BlockSelection  = blockSel;
 		Player.Entity.EntitySelection = entSel;
 
-		if (blockSel == null) {
-			api.World.HighlightBlocks(Player, 0, [ ]);
-			return;
-		}
 
-		api.World.HighlightBlocks(Player, 0, [ blockSel.Position ], EnumHighlightBlocksMode.CenteredToSelectedBlock);
+		blockSel?.Block.OnBeingLookedAt(
+			Player,
+			blockSel,
+			Player.Entity.PreviousBlockSelection is null || blockSel.Position != Player.Entity.PreviousBlockSelection
+		);
 	}
 
 }
