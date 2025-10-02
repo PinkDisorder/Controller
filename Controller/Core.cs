@@ -17,10 +17,10 @@ public class Core : ModSystem {
 	public static ILogger Logger { get; private set; }
 	public static Config Config { get; private set; }
 
-	private ICoreClientAPI Capi { get; set; }
 	private State State { get; set; }
-	private Controls Controls { get; set; }
 	private CameraHandler Camera { get; set; }
+
+	public static ICoreClientAPI Capi { get; private set; }
 
 	private static long _tickListenerId;
 
@@ -41,9 +41,9 @@ public class Core : ModSystem {
 		var harmony = new Harmony("net.vividvoid.controller");
 		harmony.PatchAll();
 
-		State    = new State();
-		Controls = new Controls(Capi);
-		Camera   = new CameraHandler(Capi);
+		State = new State();
+		Controls.RegisterListeners();
+		Camera = new CameraHandler(Capi);
 
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 
@@ -60,11 +60,11 @@ public class Core : ModSystem {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
 		Capi.Event.UnregisterRenderer(State, EnumRenderStage.Before);
 		State.Dispose();
-		State    = null;
-		Controls = null;
-		Camera   = null;
-		Config   = null;
-		Capi     = null;
+		Controls.UnregisterListeners();
+		State  = null;
+		Camera = null;
+		Config = null;
+		Capi   = null;
 		base.Dispose();
 	}
 
