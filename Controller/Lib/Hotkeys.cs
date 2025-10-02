@@ -93,4 +93,6 @@ public static class HotkeyCode {
 	public const string TickProfiler = "tickprofiler";
 	public const string PickBlock = "pickblock";
 
+	public const string WorldMapDialog = "worldmapdialog";
+
 }
