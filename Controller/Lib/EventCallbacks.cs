@@ -19,13 +19,10 @@ public class EventCallbacks(ICoreClientAPI api) {
 		}
 	}
 
-	private static BindingFlags accessFlags =
-		BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+	private static BindingFlags accessFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
-	private readonly EventInfo? _mouseDownInfo =
-		api.Event.GetType().GetEvent("MouseUp", accessFlags);
-	private readonly EventInfo? _mouseUpInfo =
-		api.Event.GetType().GetEvent("MouseDown", accessFlags);
+	private readonly EventInfo? _mouseDownInfo = api.Event.GetType().GetEvent("MouseUp", accessFlags);
+	private readonly EventInfo? _mouseUpInfo = api.Event.GetType().GetEvent("MouseDown", accessFlags);
 
 	private void TriggerHotKey(string hotkeyCode) {
 		if (api.World.Player?.Entity == null) return;
@@ -43,9 +40,7 @@ public class EventCallbacks(ICoreClientAPI api) {
 		if (eventInfo is null) return;
 
 		MouseEventDelegate? del =
-			(MouseEventDelegate?)api.Event.GetType()
-				.GetField(eventInfo.Name, accessFlags)
-				?.GetValue(api.Event);
+			(MouseEventDelegate?)api.Event.GetType().GetField(eventInfo.Name, accessFlags)?.GetValue(api.Event);
 
 		del?.Invoke(new MouseEvent(x, y, btn));
 	}
@@ -87,7 +82,9 @@ public class EventCallbacks(ICoreClientAPI api) {
 		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber + 1) % HotbarLength;
 
 	public void HotbarLeft() =>
-		ActiveHotbarSlotNumber =
-			(ActiveHotbarSlotNumber - 1 + HotbarLength) % HotbarLength;
+		ActiveHotbarSlotNumber = (ActiveHotbarSlotNumber - 1 + HotbarLength) % HotbarLength;
+
+	public void WorldMapDialog() =>
+		TriggerHotKey(HotkeyCode.WorldMapDialog);
 
 }
