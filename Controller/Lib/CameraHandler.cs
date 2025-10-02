@@ -1,19 +1,13 @@
 using System;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using OpenTK.Windowing.Desktop;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Common;
 using Vintagestory.API.Client;
-using Controller.Lib.Sorcery;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
 public class CameraHandler(ICoreClientAPI api) {
-
-	// ReSharper disable once InconsistentNaming
-	private readonly NativeWindow Window = new WindowWrapper(api).Native;
 
 	private const float PitchClampMin = (float)(Math.PI / 2);
 	private const float PitchClampMax = (float)((Math.PI * 13) / 9);
@@ -31,10 +25,8 @@ public class CameraHandler(ICoreClientAPI api) {
 		return e.IsInteractable && e.EntityId != Player?.Entity.EntityId;
 	}
 
-	public unsafe void ApplyRightStickCamera() {
+	public void ApplyRightStickCamera() {
 		if (Player?.Entity == null) return;
-
-		GLFW.SetCursorPos(Window.WindowPtr, 0, 0);
 
 		// yaw is horizontal
 		float yaw = Player.CameraYaw;
@@ -65,6 +57,7 @@ public class CameraHandler(ICoreClientAPI api) {
 
 	private void UpdateCurrentSelection(float pitch, float yaw) {
 		// Update target
+		if (Player is null) return;
 		Vec3d clientCameraPos = Player.Entity.Pos.XYZ.Clone().Add(0, Player.Entity.LocalEyePos.Y, 0);
 
 		float range = Player.WorldData.PickingRange;
