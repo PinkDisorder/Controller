@@ -25,7 +25,7 @@ public class Core : ModSystem {
 
 	private static void OnGameTick(float v) {
 		Controls.ApplyInputs();
-		CameraHandler.ApplyRightStickCamera();
+		Camera.ApplyRightStickCamera();
 	}
 
 	public override void StartPre(ICoreAPI api) {

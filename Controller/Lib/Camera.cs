@@ -7,7 +7,7 @@ using Vintagestory.Client.NoObf;
 
 namespace Controller.Lib;
 
-public static class CameraHandler {
+public static class Camera {
 
 	private const float PitchClampMin = (float)(Math.PI / 2);
 	private const float PitchClampMax = (float)((Math.PI * 13) / 9);
