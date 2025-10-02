@@ -94,5 +94,7 @@ public static class HotkeyCode {
 	public const string PickBlock = "pickblock";
 
 	public const string WorldMapDialog = "worldmapdialog";
+	public const string WorldMapHud = "worldmaphud";
+	public const string MiniMapPosition = "minimapposition";
 
 }
