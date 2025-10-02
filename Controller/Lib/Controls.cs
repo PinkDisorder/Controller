@@ -20,6 +20,7 @@ public class Controls {
 	private Button _hotbarRight;
 	private Button _leftClick;
 	private Button _rightClick;
+	private Button _worldMap;
 
 	public Controls(ICoreClientAPI api) {
 		_api            = api;
@@ -35,6 +36,8 @@ public class Controls {
 		_hotbarRight    = State.GetButton(Core.Config.Keybinds["HotbarRight"]);
 		_leftClick      = State.GetButton(Core.Config.Keybinds["LeftClick"]);
 		_rightClick     = State.GetButton(Core.Config.Keybinds["RightClick"]);
+		_worldMap       = State.GetButton(Core.Config.Keybinds["Map"]);
+
 		RegisterListeners();
 	}
 
@@ -57,6 +60,7 @@ public class Controls {
 		_hotbarRight    = State.GetButton(Core.Config.Keybinds["HotbarRight"]);
 		_leftClick      = State.GetButton(Core.Config.Keybinds["LeftClick"]);
 		_rightClick     = State.GetButton(Core.Config.Keybinds["RightClick"]);
+		_worldMap       = State.GetButton(Core.Config.Keybinds["Map"]);
 	}
 
 	private void RegisterListeners() {
@@ -81,6 +85,8 @@ public class Controls {
 		_rightClick.OnPress     += _callbacks.RightClickDown;
 		_rightClick.OnLongPress += _callbacks.RightClickDown;
 		_rightClick.OnRelease   += _callbacks.RightClickUp;
+
+		_worldMap.OnPress += _callbacks.WorldMapDialog;
 	}
 
 	private void UnregisterListeners() {
@@ -105,6 +111,8 @@ public class Controls {
 		_rightClick.OnPress     -= _callbacks.RightClickDown;
 		_rightClick.OnLongPress -= _callbacks.RightClickDown;
 		_rightClick.OnRelease   -= _callbacks.RightClickUp;
+
+		_worldMap.OnPress -= _callbacks.WorldMapDialog;
 	}
 
 	// Reserved for checking boolean inputs.
