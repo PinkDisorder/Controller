@@ -7,13 +7,12 @@ namespace Controller.Lib;
 
 public class Config {
 
-	private readonly ConfigData Data;
-	private readonly ConfigData DefaultData;
+	private readonly ConfigData _data;
 	private string[] KnownKeybinds { get; }
 	private string[] KnownTuning { get; }
 
-	public Dictionary<string, string> Keybinds => Data.Keybinds;
-	public Dictionary<string, float> Tuning => Data.Tuning;
+	public Dictionary<string, string> Keybinds => _data.Keybinds;
+	public Dictionary<string, float> Tuning => _data.Tuning;
 
 	private ICoreAPI Capi { get; }
 	private Mod Mod { get; }
@@ -58,12 +57,12 @@ public class Config {
 	}
 
 	public Config(ICoreAPI api, Mod mod) {
-		Mod           = mod;
-		Capi          = api;
-		DefaultData   = new ConfigData();
-		KnownKeybinds = DefaultData.Keybinds.Keys.ToArray();
-		KnownTuning   = DefaultData.Tuning.Keys.ToArray();
-		Data          = TryReadConfig();
+		Mod  = mod;
+		Capi = api;
+		var defaultData = new ConfigData();
+		KnownKeybinds = defaultData.Keybinds.Keys.ToArray();
+		KnownTuning   = defaultData.Tuning.Keys.ToArray();
+		_data         = TryReadConfig();
 	}
 
 }
