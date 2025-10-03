@@ -13,16 +13,30 @@ public class State : IRenderer {
 	// The length of the axes will always be 6 as per glfw documentation.
 	private const int AxesLength = 6;
 
-	// TODO: Allow the user to manually change this.
-	private readonly static int JoystickId = ScanForJoystickThatReportsState();
+	private static int _joystickId = Enumerable.Range(0, 16).FirstOrDefault(i => GLFW.GetGamepadState(i, out var _), -1);
 
-	private static int ScanForJoystickThatReportsState() {
-		for (int i = 0; i < 16; i++) {
-			bool found = GLFW.GetGamepadState(i, out var _);
-			if (found) return i;
+	public static void JoystickCallback(int jid, ConnectedState state) {
+		if (state is ConnectedState.Disconnected) {
+			if (jid == _joystickId) {
+				_joystickId = -1;
+			} else return;
 		}
 
-		return -1;
+		// stateless device, not a real joystick
+		if (!GLFW.GetGamepadState(jid, out var _)) return;
+
+		switch (_joystickId) {
+			case < 0:
+				_joystickId = jid;
+				return;
+
+			case > 0 when GLFW.GetGamepadState(_joystickId, out var _):
+				return;
+
+			case > 0:
+				_joystickId = jid;
+				break;
+		}
 	}
 
 	private readonly static GamepadButton[] ButtonCodes = Enum.GetValues<GamepadButton>();
@@ -33,6 +47,7 @@ public class State : IRenderer {
 		ButtonCodes.ToDictionary(btn => btn, _ => new Button());
 
 	public static AnalogStick LeftStick { get; } = new((int)GamepadAxis.LeftX, (int)GamepadAxis.LeftY);
+
 	public static AnalogStick RightStick { get; } = new((int)GamepadAxis.RightX, (int)GamepadAxis.RightY);
 
 	private readonly static Dictionary<string, GamepadButton> GamepadButtonMap =
@@ -56,9 +71,8 @@ public class State : IRenderer {
 	}
 
 	public unsafe void OnRenderFrame(float deltaTime, EnumRenderStage stage) {
-		// Early exit if we have no joystick or can't read it.
-		if (JoystickId < 0) return;
-		if (!GLFW.GetGamepadState(JoystickId, out var gamepadState)) return;
+		if (_joystickId < 0) return;
+		if (!GLFW.GetGamepadState(_joystickId, out var gamepadState)) return;
 
 		foreach ((GamepadButton btn, Button button) in Buttons) {
 			byte state = gamepadState.Buttons[(int)btn];

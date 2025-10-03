@@ -48,6 +48,8 @@ public class Core : ModSystem {
 
 		State = new State();
 
+		GLFW.SetJoystickCallback(State.JoystickCallback);
+
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 		_tickListenerId = Capi.Event.RegisterGameTickListener(OnGameTick, 0);
 
