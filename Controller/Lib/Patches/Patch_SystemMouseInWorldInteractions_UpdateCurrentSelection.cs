@@ -2,7 +2,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using Vintagestory.Client.NoObf;
 
-namespace Controller.Lib.Sorcery;
+namespace Controller.Lib.Patches;
 
 [HarmonyPatch(typeof(SystemMouseInWorldInteractions), "UpdateCurrentSelection")]
 public static class Patch_SystemMouseInWorldInteractions_UpdateCurrentSelection {
