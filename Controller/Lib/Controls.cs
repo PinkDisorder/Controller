@@ -9,7 +9,7 @@ namespace Controller.Lib;
 
 public static class Controls {
 
-	private record ControlCallbacks {
+	public record ControlCallbacks {
 
 		public Action? OnPress { get; init; }
 		public Action? OnHeldRepeat { get; init; }
@@ -104,46 +104,24 @@ public static class Controls {
 		},
 	};
 
-	public static void RegisterListeners() {
+	public static void BindListeners() {
 		foreach ((string keybind, ControlCallbacks callbacks) in CallbackStore) {
 			var button = State.GetButton(Core.Config.Keybinds[keybind]);
-
-			if (callbacks.OnPress is not null) {
-				button.OnPress += callbacks.OnPress;
-			}
-
-			if (callbacks.OnHeldRepeat is not null) {
-				button.OnHeldRepeat += callbacks.OnHeldRepeat;
-			}
-
-			if (callbacks.OnRelease is not null) {
-				button.OnRelease += callbacks.OnRelease;
-			}
+			button.BindCallbacks(callbacks);
 		}
 	}
 
-	public static void UnregisterListeners() {
+	public static void UnbindListeners() {
 		foreach ((string keybind, ControlCallbacks callbacks) in CallbackStore) {
 			var button = State.GetButton(Core.Config.Keybinds[keybind]);
-
-			if (callbacks.OnPress is not null) {
-				button.OnPress -= callbacks.OnPress;
-			}
-
-			if (callbacks.OnHeldRepeat is not null) {
-				button.OnHeldRepeat -= callbacks.OnHeldRepeat;
-			}
-
-			if (callbacks.OnRelease is not null) {
-				button.OnRelease -= callbacks.OnRelease;
-			}
+			button.UnbindCallbacks(callbacks);
 		}
 	}
 
 	// TODO: Create a config event that calls this whenever there's a keybind change.
-	private static void ReloadKeybinds() {
-		UnregisterListeners();
-		RegisterListeners();
+	public static void ReloadKeybinds() {
+		UnbindListeners();
+		BindListeners();
 	}
 
 	// Reserved for checking boolean inputs.

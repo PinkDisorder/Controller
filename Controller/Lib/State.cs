@@ -13,30 +13,27 @@ public class State : IRenderer {
 	// The length of the axes will always be 6 as per glfw documentation.
 	private const int AxesLength = 6;
 
-	private static int _joystickId = Enumerable.Range(0, 16).FirstOrDefault(i => GLFW.GetGamepadState(i, out var _), -1);
+	private static int JoystickId = Enumerable.Range(0, 16).FirstOrDefault(i => GLFW.GetGamepadState(i, out var _), -1);
 
 	public static void JoystickCallback(int jid, ConnectedState state) {
+		// Handle disconnection
 		if (state is ConnectedState.Disconnected) {
-			if (jid == _joystickId) {
-				_joystickId = -1;
-			} else return;
+			if (jid == JoystickId) {
+				JoystickId = -1;
+			}
+
+			return;
 		}
 
-		// stateless device, not a real joystick
+		// stateless device, not valid
 		if (!GLFW.GetGamepadState(jid, out var _)) return;
 
-		switch (_joystickId) {
-			case < 0:
-				_joystickId = jid;
-				return;
+		// we have a valid joystick, ignore
+		if (JoystickId >= 0 && GLFW.GetGamepadState(JoystickId, out var _)) return;
 
-			case > 0 when GLFW.GetGamepadState(_joystickId, out var _):
-				return;
-
-			case > 0:
-				_joystickId = jid;
-				break;
-		}
+		// either no joystick or the old one is dead -> adopt this one
+		JoystickId = jid;
+		Controls.ReloadKeybinds();
 	}
 
 	private readonly static GamepadButton[] ButtonCodes = Enum.GetValues<GamepadButton>();
@@ -71,8 +68,8 @@ public class State : IRenderer {
 	}
 
 	public unsafe void OnRenderFrame(float deltaTime, EnumRenderStage stage) {
-		if (_joystickId < 0) return;
-		if (!GLFW.GetGamepadState(_joystickId, out var gamepadState)) return;
+		if (JoystickId < 0) return;
+		if (!GLFW.GetGamepadState(JoystickId, out var gamepadState)) return;
 
 		foreach ((GamepadButton btn, Button button) in Buttons) {
 			byte state = gamepadState.Buttons[(int)btn];

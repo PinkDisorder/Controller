@@ -19,6 +19,28 @@ public class Button {
 	public event Action? OnLongPress;
 	public event Action? OnRelease;
 
+	public void BindCallbacks(Controls.ControlCallbacks callbacks) {
+		if (callbacks.OnPress is not null)
+			OnPress += callbacks.OnPress;
+
+		if (callbacks.OnHeldRepeat is not null)
+			OnHeldRepeat += callbacks.OnHeldRepeat;
+
+		if (callbacks.OnRelease is not null)
+			OnRelease += callbacks.OnRelease;
+	}
+
+	public void UnbindCallbacks(Controls.ControlCallbacks callbacks) {
+		if (callbacks.OnPress is not null)
+			OnPress -= callbacks.OnPress;
+
+		if (callbacks.OnHeldRepeat is not null)
+			OnHeldRepeat -= callbacks.OnHeldRepeat;
+
+		if (callbacks.OnRelease is not null)
+			OnRelease -= callbacks.OnRelease;
+	}
+
 	public void RegisterPress(float deltaTime) {
 		// Reset per-frame transient flags
 		if (_deltaTime == 0) {

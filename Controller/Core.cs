@@ -37,10 +37,6 @@ public class Core : ModSystem {
 		base.StartClientSide(api);
 		Capi = api;
 
-		// This is required for any modern controller to get read
-		// correctly. Remember to update regularly.
-		// Perhaps write some kind of method to automatically
-		// pull it from git.
 		GLFW.UpdateGamepadMappings(api.Assets.Get($"{ModId}:config/gamecontrollerdb.txt").ToText());
 
 		var harmony = new Harmony("net.vividvoid.controller");
@@ -53,13 +49,13 @@ public class Core : ModSystem {
 		Capi.Event.RegisterRenderer(State, EnumRenderStage.Before);
 		_tickListenerId = Capi.Event.RegisterGameTickListener(OnGameTick, 0);
 
-		Controls.RegisterListeners();
+		Controls.BindListeners();
 	}
 
 	public override void Dispose() {
 		Capi.Event.UnregisterGameTickListener(_tickListenerId);
 		Capi.Event.UnregisterRenderer(State, EnumRenderStage.Before);
-		Controls.UnregisterListeners();
+		Controls.UnbindListeners();
 		State.Dispose();
 		State  = null;
 		Config = null;
